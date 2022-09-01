@@ -1,7 +1,10 @@
 // import DiscordJS, { ClientVoiceManager, IntentsBitField, time } from 'discord.js'
 //const DiscordJS = require("discord.js")
 import DiscordJS from "discord.js"
-import fetch from "node-fetch";
+import fetch from "node-fetch"
+import dotenv from 'dotenv'
+import fs from 'fs'
+
 const client = new DiscordJS.Client(
     {
         intents: [
@@ -11,12 +14,20 @@ const client = new DiscordJS.Client(
         ]
     }
 )
-import dotenv from 'dotenv'
+
 dotenv.config()
+
 
 client.on('ready', () => {
     console.log('Bot ready')
 })
+
+//get settings from settings.txt
+var settingsArr = []
+var settingsString = fs.readFileSync('settings.txt').toString()
+settingsArr = settingsString.split('\n')
+settingsString = ''
+var botPrefix = '' + settingsArr[0].substring(5, 6)
 
 
 async function nextCommand(message) {
@@ -233,19 +244,46 @@ async function qualiCommand(message) {
     }
 
 }
-
+function changeCommand(message){
+    function invalidChangeInput() {
+        message.reply({
+            content: 'Please enter a valid prefix: $driver &'
+        })
+    }
+    if (message.content.length >= 8) {
+        console.log('prefix changed to ' + message.content[8])
+        botPrefix = message.content[message.content.indexOf('change') + 7]
+        settingsArr[0] = 'char=' + botPrefix
+        for (let i = 0; i < settingsArr.length; i++) {
+            settingsString += settingsArr[i] + '\n'
+        }
+        fs.writeFileSync('settings.txt', settingsString, (err) => {
+            if (err) throw err;
+        })
+        settingsString = ''
+        message.reply({
+            content: 'Bot prefix changed to ' + botPrefix,
+        })
+    }
+    else {
+        invalidChangeInput();
+    }
+}
 
 
 client.on("messageCreate", message => {
     if (message.author.bot == false) {
-        if (message.content.toLowerCase().includes('$n') && message.content.toLowerCase().indexOf('$n') == 0) {
+        if (message.content.toLowerCase().includes(botPrefix+'n') && message.content.toLowerCase().indexOf(botPrefix+'n') == 0) {
             nextCommand(message)
         }
-        else if (message.content.toLowerCase().includes('$driver') && message.content.toLowerCase().indexOf('$driver') == 0) {
+        else if (message.content.toLowerCase().includes(botPrefix+'driver') && message.content.toLowerCase().indexOf(botPrefix+'driver') == 0) {
             driverCommand(message)
         }
-        else if (message.content.toLowerCase().includes('$quali') && message.content.toLowerCase().indexOf('$quali') == 0) {
+        else if (message.content.toLowerCase().includes(botPrefix+'quali') && message.content.toLowerCase().indexOf(botPrefix+'quali') == 0) {
             qualiCommand(message)
+        }
+        else if (message.content.toLowerCase().includes(botPrefix+'change') && message.content.toLowerCase().indexOf(botPrefix+'change') == 0) {
+            changeCommand(message)
         }
     }
 })
