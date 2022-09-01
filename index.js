@@ -18,10 +18,8 @@ client.on('ready', () => {
     console.log('Bot ready')
 })
 
-//import { RequestInfo, RequestInit } from "node-fetch";
 
-//const fetch = (url: RequestInfo, init?: RequestInit) =>  import("node-fetch").then(({ default: fetch }) => fetch(url, init));
-async function nextCommand(msg) {
+async function nextCommand(message) {
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
     var calendarAsString = ''
     var calSubs = []
@@ -61,13 +59,13 @@ async function nextCommand(msg) {
 
     var nextEventName = eventTimes[nextIndex * 2 + 1].substring(0, eventTimes[nextIndex * 2 + 1].length - 1);
     var nextEventTime = eventDateArr[nextIndex].toLocaleString()
-    msg.reply({
+    message.reply({
         content: 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``'
     })
 }
-async function driverCommand(msg) {
+async function driverCommand(message) {
     function invalidDNumInput() {
-        msg.reply({
+        message.reply({
             content: 'Please enter a valid driver number (2020 - 2022): $driver 33'
         })
     }
@@ -103,9 +101,9 @@ async function driverCommand(msg) {
     ]);
     var driverNumber = 0
     var driverName = ''
-    if (msg.content.length >= 8) {
+    if (message.content.length >= 8) {
         //get driver num from user
-        driverNumber = (Number)(msg.content.substring(8))
+        driverNumber = (Number)(message.content.substring(8))
         if (Number.isFinite(driverNumber)) {
             if (drivers.get(driverNumber) == undefined) {
                 invalidDNumInput()
@@ -137,7 +135,7 @@ async function driverCommand(msg) {
                         finalOutString += statStringsArr[i * 2] + outString + statStringsArr[i * 2 + 1] + '\n'
                     }
                     finalOutString += '```'
-                    await msg.reply({
+                    await message.reply({
                         content: finalOutString
                     })
                 }
@@ -152,16 +150,102 @@ async function driverCommand(msg) {
         invalidDNumInput()
     }
 }
+async function qualiCommand(message) {
+    var rounds = new Map([]);
+    var icsAsString = ''
+    var icsArr = []
 
-
-
-client.on("messageCreate", msg => {
-    if (msg.author.bot == false) {
-        if (msg.content.includes('$n') && msg.content.indexOf('$n') == 0) {
-            nextCommand(msg)
+    //get round names and numbers into rounds Map
+    async function getRounds() {
+        var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
+        const fetchedPage = await fetch(calendarURL)
+        icsAsString = await fetchedPage.text()
+        icsArr = icsAsString.split('\n')
+        for (let i = 0, c = 1; i < icsArr.length; i++) {
+            if (icsArr[i].includes(' - Qualifying')) {
+                rounds.set(c, icsArr[i].substring(8, icsArr[i].length - 1))
+                c++
+            }
         }
-        else if (msg.content.includes('$driver') && msg.content.indexOf('$driver') == 0) {
-            driverCommand(msg)
+        if (message.content.length >= 7) {
+            // get round number from user
+            roundNumber = Number(message.content.substring(7));
+            if (Number.isFinite(roundNumber)) {
+                if (rounds.get(roundNumber) == undefined) {
+                    invalidDNumInput();
+                } else {
+                    roundName = rounds.get(roundNumber);
+
+                    //generate URL for ergast quali stats using round number
+                    var statURL = "";
+                    var finalOutString = roundName + " results:\n\n";
+                    var outString = "";
+                    statURL = "http://ergast.com/api/f1/2022/";
+                    statURL += roundNumber + "/" + "qualifying.json";
+
+
+                    const fetchedPage = await fetch(statURL);
+                    const pageData = await fetchedPage.json();
+                    // create the final string to be printed by extracting json elements
+                    if (pageData.MRData.RaceTable.Races.length != 0) {
+                        var qualiArr = pageData.MRData.RaceTable.Races[0].QualifyingResults;
+                        for (let i = 0; i < qualiArr.length; i++) {
+                            var positionString = 'P' + pageData.MRData.RaceTable.Races[0].QualifyingResults[i].position
+                            var driverNameString = pageData.MRData.RaceTable.Races[0].QualifyingResults[i].Driver.givenName + ' ' +
+                                pageData.MRData.RaceTable.Races[0].QualifyingResults[i].Driver.familyName
+                            var q1Time = pageData.MRData.RaceTable.Races[0].QualifyingResults[i].Q1
+                            var q2Time = pageData.MRData.RaceTable.Races[0].QualifyingResults[i].Q2
+                            var q3Time = pageData.MRData.RaceTable.Races[0].QualifyingResults[i].Q3
+                            finalOutString += '```c\n'
+                            finalOutString += positionString + '\n\n' + driverNameString + '\n'
+                            if (q3Time != undefined) {
+                                finalOutString += 'Q3 Time = ' + q3Time + '\n'
+                            }
+                            if (q2Time != undefined) {
+                                finalOutString += 'Q2 Time = ' + q2Time + '\n'
+                            }
+                            if (q1Time != undefined) {
+                                finalOutString += 'Q1 Time = ' + q1Time + '\n'
+                            }
+                            finalOutString += '```'
+                        }
+                    }
+                    else {
+                        finalOutString = 'Please enter a round number that has occured'
+                    }
+                    await message.reply({
+                        content: finalOutString,
+                    });
+                }
+            } else {
+                invalidDNumInput();
+            }
+        }
+    }
+    getRounds()
+
+    var roundNumber = 1;
+    var roundName = "";
+    function invalidDNumInput() {
+        message.reply({
+            content: "Please enter a valid round number (2022): $quali 1",
+        });
+    }
+
+}
+
+
+
+client.on("messageCreate", message => {
+    if (message.author.bot == false) {
+        if (message.content.toLowerCase().includes('$n') && message.content.toLowerCase().indexOf('$n') == 0) {
+            nextCommand(message)
+        }
+        else if (message.content.toLowerCase().includes('$driver') && message.content.toLowerCase().indexOf('$driver') == 0) {
+            driverCommand(message)
+        }
+        else if (message.content.toLowerCase().includes('$quali') && message.content.toLowerCase().indexOf('$quali') == 0) {
+            qualiCommand(message)
         }
     }
 })
