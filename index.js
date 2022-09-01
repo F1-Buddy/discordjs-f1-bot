@@ -112,7 +112,7 @@ async function driverCommand(message) {
     ]);
     var driverNumber = 0
     var driverName = ''
-    if (message.content.length >= 8) {
+    if (message.content.length >= 8 && message.content.includes('driver ')) {
         //get driver num from user
         driverNumber = (Number)(message.content.substring(8))
         if (Number.isFinite(driverNumber)) {
