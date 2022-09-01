@@ -157,7 +157,7 @@ async function qualiCommand(message) {
 
     //get round names and numbers into rounds Map
     async function getRounds() {
-        var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
+        var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics' 
         const fetchedPage = await fetch(calendarURL)
         icsAsString = await fetchedPage.text()
         icsArr = icsAsString.split('\n')
