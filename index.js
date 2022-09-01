@@ -168,7 +168,7 @@ async function qualiCommand(message) {
 
     //get round names and numbers into rounds Map
     async function getRounds() {
-        var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics' 
+        var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
         const fetchedPage = await fetch(calendarURL)
         icsAsString = await fetchedPage.text()
         icsArr = icsAsString.split('\n')
@@ -244,7 +244,7 @@ async function qualiCommand(message) {
     }
 
 }
-function changeCommand(message){
+function changeCommand(message) {
     function invalidChangeInput() {
         message.reply({
             content: 'Please enter a valid prefix: $driver &'
@@ -269,21 +269,79 @@ function changeCommand(message){
         invalidChangeInput();
     }
 }
+async function standingsCommand(message) {
+    var today = new Date()
+    var year = today.getFullYear().toString()
+    var finalOutString = ''
+    var standingsURL = 'http://ergast.com/api/f1/'
+    if (message.content.includes('wcc') && !message.content.includes('wdc')) {
+        year = (Number)(message.content.substring(message.content.indexOf('wcc') + 3))
+        if (year == 0) {year = today.getFullYear().toString()}
+        console.log(year)
+        if (year > 1957) {
+            standingsURL += year + '/constructorStandings.json'
+            const checkPage = await fetch(standingsURL);
+            const pageDataRawText = await checkPage.text();
+            if (pageDataRawText.toLowerCase().includes('bad request')) {
+                message.reply({
+                    content: 'Enter a valid year'
+                })
+            }
+            else {
+                finalOutString += year + ' DRIVERS STANDINGS\n\n'
+                const fetchedPage = await fetch(standingsURL);
+                const pageJSON = await fetchedPage.json();
+                const standingsResults = pageJSON.MRData.StandingsTable.StandingsLists[0]
+                console.log(standingsResults.ConstructorStandings.length)
+                for (let i = 0; i < standingsResults.ConstructorStandings.length; i++) {
+                    console.log(standingsResults.ConstructorStandings[i].Constructor.name)
+                    finalOutString += standingsResults.ConstructorStandings[i].Constructor.name + '\n'
+                }
+                message.reply({
+                    content: finalOutString.toString()
+                })
+            }
+        }
+        else {
+            message.reply({
+                content: 'Enter a valid year'
+            })
+        }
+
+    }
+    // wdcURL += '/driverStandings'
+
+}
 
 
 client.on("messageCreate", message => {
     if (message.author.bot == false) {
-        if (message.content.toLowerCase().includes(botPrefix+'n') && message.content.toLowerCase().indexOf(botPrefix+'n') == 0) {
+        if (message.content.toLowerCase().includes(botPrefix + 'n') && message.content.toLowerCase().indexOf(botPrefix + 'n') == 0) {
             nextCommand(message)
         }
-        else if (message.content.toLowerCase().includes(botPrefix+'driver') && message.content.toLowerCase().indexOf(botPrefix+'driver') == 0) {
+        else if (message.content.toLowerCase().includes(botPrefix + 'driver') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'driver') == 0
+        ) {
             driverCommand(message)
         }
-        else if (message.content.toLowerCase().includes(botPrefix+'quali') && message.content.toLowerCase().indexOf(botPrefix+'quali') == 0) {
+        else if (message.content.toLowerCase().includes(botPrefix + 'quali') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
+        ) {
             qualiCommand(message)
         }
-        else if (message.content.toLowerCase().includes(botPrefix+'change') && message.content.toLowerCase().indexOf(botPrefix+'change') == 0) {
+        else if (message.content.toLowerCase().includes(botPrefix + 'change') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'change') == 0
+        ) {
             changeCommand(message)
+        }
+        else if ((message.content.toLowerCase().includes(botPrefix + 'standings') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'standings') == 0) ||
+            (message.content.toLowerCase().includes(botPrefix + 'wdc') &&
+                message.content.toLowerCase().indexOf(botPrefix + 'wdc') == 0) ||
+            (message.content.toLowerCase().includes(botPrefix + 'wcc') &&
+                message.content.toLowerCase().indexOf(botPrefix + 'wcc') == 0)
+        ) {
+            standingsCommand(message)
         }
     }
 })
