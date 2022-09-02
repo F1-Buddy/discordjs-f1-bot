@@ -74,6 +74,39 @@ async function nextCommand(message) {
         content: 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``'
     })
 }
+
+async function resultsCommand(message) {
+    var finalMessage = '```\n'
+    // var requestOptions = {
+    //     method: 'GET',
+    //     redirect: 'follow'
+    //   };
+      
+    //   fetch("http://ergast.com/api/f1/current/last/results.json", requestOptions)
+    //     .then(response => response.text())
+    //     .then(result => console.log(result))
+    //     .catch(error => console.log('error', error));
+    var dataURL = "http://ergast.com/api/f1/current/last/results.json"
+    const fetchedPage = await fetch(dataURL)
+    const pageData = await fetchedPage.json();
+    
+    // console.log(fetchedPage)
+
+    var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
+    finalMessage += 'Formula 1 ' + pageData.MRData.RaceTable.Races[0].raceName + ' '
+    finalMessage += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
+    finalMessage += pageData.MRData.RaceTable.Races[0].season + ' Race Results\n'
+
+    
+    console.log(finalMessage)
+
+    finalMessage += '```'
+    message.reply({
+        content: finalMessage
+    })
+}
+
+
 async function driverCommand(message) {
     function invalidDNumInput() {
         message.reply({
@@ -161,6 +194,7 @@ async function driverCommand(message) {
         invalidDNumInput()
     }
 }
+
 async function qualiCommand(message) {
     var rounds = new Map([]);
     var icsAsString = ''
@@ -366,6 +400,11 @@ client.on("messageCreate", message => {
             message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
         ) {
             qualiCommand(message)
+        }
+        else if (message.content.toLowerCase().includes(botPrefix + 'results') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'results') == 0
+        ) {
+            resultsCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'change') &&
             message.content.toLowerCase().indexOf(botPrefix + 'change') == 0
