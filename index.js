@@ -365,6 +365,9 @@ client.on("messageCreate", message => {
         else if (message.content.toLowerCase().includes(botPrefix + 'quali') &&
             message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
         ) {
+            if (message.content.toLowerCase().includes(botPrefix+'quali') && message.content.length == 6){
+                message.reply("Add a round number at the end! \"$quali 14\" for example") 
+            }
             qualiCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'change') &&
