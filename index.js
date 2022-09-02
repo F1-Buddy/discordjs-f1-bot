@@ -277,7 +277,7 @@ async function standingsCommand(message) {
     if (message.content.includes('wcc') && !message.content.includes('wdc')) {
         year = (Number)(message.content.substring(message.content.indexOf('wcc') + 3))
         if (year == 0) {year = today.getFullYear().toString()}
-        console.log(year)
+        //console.log(year)
         if (year > 1957) {
             standingsURL += year + '/constructorStandings.json'
             const checkPage = await fetch(standingsURL);
@@ -288,15 +288,15 @@ async function standingsCommand(message) {
                 })
             }
             else {
-                finalOutString += year + ' DRIVERS STANDINGS\n\n'
+                finalOutString += "```c\n\t" +year + " CONSTRUCTORS STANDINGS\n\nPosition\t\tPoints\t\tConstructor\n"
                 const fetchedPage = await fetch(standingsURL);
                 const pageJSON = await fetchedPage.json();
                 const standingsResults = pageJSON.MRData.StandingsTable.StandingsLists[0]
-                console.log(standingsResults.ConstructorStandings.length)
                 for (let i = 0; i < standingsResults.ConstructorStandings.length; i++) {
-                    console.log(standingsResults.ConstructorStandings[i].Constructor.name)
-                    finalOutString += standingsResults.ConstructorStandings[i].Constructor.name + '\n'
+                    finalOutString += "\t"+standingsResults.ConstructorStandings[i].position + "\t\t\t" + standingsResults.ConstructorStandings[i].points + "\t\t\t"
+                    finalOutString += standingsResults.ConstructorStandings[i].Constructor.name + "\n"
                 }
+                finalOutString += "\n```"
                 message.reply({
                     content: finalOutString.toString()
                 })
@@ -308,6 +308,44 @@ async function standingsCommand(message) {
             })
         }
 
+    }
+    else if (message.content.includes('wdc') && !message.content.includes('wcc')) {
+        year = (Number)(message.content.substring(message.content.indexOf('wdc') + 3))
+        if (year == 0) {year = today.getFullYear().toString()}
+        //console.log(year)
+        if (year > 1957) {
+            standingsURL += year + '/driverStandings.json'
+            const checkPage = await fetch(standingsURL);
+            const pageDataRawText = await checkPage.text();
+            if (pageDataRawText.toLowerCase().includes('bad request')) {
+                message.reply({
+                    content: 'Enter a valid year'
+                })
+            }
+            else {
+                finalOutString += finalOutString += "```c\n\t" +year + " DRIVERS STANDINGS\n\nPosition\t\tPoints\t\tDriver\n"
+                const fetchedPage = await fetch(standingsURL);
+                const pageJSON = await fetchedPage.json();
+                const standingsResults = pageJSON.MRData.StandingsTable.StandingsLists[0]
+                for (let i = 0; i < standingsResults.DriverStandings.length; i++) {
+                    finalOutString += "\t"+standingsResults.DriverStandings[i].position + "\t\t\t" + standingsResults.DriverStandings[i].points + "\t\t\t"
+                    finalOutString += standingsResults.DriverStandings[i].Driver.givenName + ' ' + standingsResults.DriverStandings[i].Driver.familyName + '\n'
+                }
+                finalOutString += "\n```"
+                message.reply({
+                    content: finalOutString.toString()
+                })
+            }
+        }
+        else {
+            message.reply({
+                content: 'Enter a valid year'
+            })
+        }
+
+    }
+    else {
+        message.reply("Please use wcc and wdc separately!")
     }
     // wdcURL += '/driverStandings'
 
@@ -341,7 +379,12 @@ client.on("messageCreate", message => {
             (message.content.toLowerCase().includes(botPrefix + 'wcc') &&
                 message.content.toLowerCase().indexOf(botPrefix + 'wcc') == 0)
         ) {
-            standingsCommand(message)
+            if (message.content.toLowerCase().includes('standings')){
+                message.reply("Try \"$wcc\" or \"$wdc 2013\" for example") 
+            }
+            else {
+                standingsCommand(message)
+            }
         }
     }
 })
