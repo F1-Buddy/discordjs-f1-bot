@@ -123,8 +123,7 @@ async function resultsCommand(message) {
         .setTimestamp()
         // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
-    const channel = client.channels.cache.get('1013448201522655283');
-    channel.send({ embeds: [resultsEmbed] });
+    message.reply({ embeds: [resultsEmbed] });
 }
 
 
