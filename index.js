@@ -5,6 +5,8 @@ import fetch from "node-fetch"
 import dotenv from 'dotenv'
 import fs from 'fs'
 
+import { EmbedBuilder } from 'discord.js'
+
 const client = new DiscordJS.Client(
     {
         intents: [
@@ -15,11 +17,14 @@ const client = new DiscordJS.Client(
     }
 )
 
+
 dotenv.config()
 
 
 client.on('ready', () => {
-    console.log('Bot ready')
+    // const channel = client.channels.cache.get('1013448201522655283');
+    console.log(`${client.user.tag}  logged in`);
+    // console.log('Bot ready')
 })
 
 //get settings from settings.txt
@@ -76,7 +81,7 @@ async function nextCommand(message) {
 }
 
 async function resultsCommand(message) {
-    var finalMessage = '```\n'
+    var finalMessage = ''
     // var requestOptions = {
     //     method: 'GET',
     //     redirect: 'follow'
@@ -93,17 +98,33 @@ async function resultsCommand(message) {
     // console.log(fetchedPage)
 
     var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
-    finalMessage += 'Formula 1 ' + pageData.MRData.RaceTable.Races[0].raceName + ' '
-    finalMessage += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
-    finalMessage += pageData.MRData.RaceTable.Races[0].season + ' Race Results\n'
+    var title = 'Formula 1 ' + pageData.MRData.RaceTable.Races[0].raceName + ' '
+    title += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
+    title += pageData.MRData.RaceTable.Races[0].season + '\n'
 
     
-    console.log(finalMessage)
+    //console.log(finalMessage)
 
-    finalMessage += '```'
-    message.reply({
-        content: finalMessage
-    })
+    const resultsEmbed = new EmbedBuilder()
+        .setColor([255, 24, 1])
+        .setTitle(title)
+        .setURL('https://www.formula1.com/en/results.html')
+        // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
+        // .setDescription('Some description here')
+        // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
+        // .addFields(
+        //	{ name: 'description', value: ':checkered_flag: Race Results :checkered_flag:ss' },
+        // 	{ name: '\u200B', value: '\u200B' },
+        // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
+        // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
+        // )
+        .addFields({ name: ':checkered_flag: Race Results :checkered_flag:', value: title })
+        // .setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp()
+        // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+
+    const channel = client.channels.cache.get('1013448201522655283');
+    channel.send({ embeds: [resultsEmbed] });
 }
 
 
