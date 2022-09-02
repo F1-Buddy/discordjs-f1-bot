@@ -5,6 +5,8 @@ import fetch from "node-fetch"
 import dotenv from 'dotenv'
 import fs from 'fs'
 
+import { EmbedBuilder } from 'discord.js'
+
 const client = new DiscordJS.Client(
     {
         intents: [
@@ -15,11 +17,14 @@ const client = new DiscordJS.Client(
     }
 )
 
+
 dotenv.config()
 
 
 client.on('ready', () => {
-    console.log('Bot ready')
+    // const channel = client.channels.cache.get('1013448201522655283');
+    console.log(`${client.user.tag}  logged in`);
+    // console.log('Bot ready')
 })
 
 //get settings from settings.txt
@@ -74,6 +79,55 @@ async function nextCommand(message) {
         content: 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``'
     })
 }
+
+async function resultsCommand(message) {
+    var finalMessage = ''
+    // var requestOptions = {
+    //     method: 'GET',
+    //     redirect: 'follow'
+    //   };
+      
+    //   fetch("http://ergast.com/api/f1/current/last/results.json", requestOptions)
+    //     .then(response => response.text())
+    //     .then(result => console.log(result))
+    //     .catch(error => console.log('error', error));
+    var dataURL = "http://ergast.com/api/f1/current/last/results.json"
+    const fetchedPage = await fetch(dataURL)
+    const pageData = await fetchedPage.json();
+    
+    // console.log(fetchedPage)
+
+    var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
+    var title = 'Formula 1 ' + pageData.MRData.RaceTable.Races[0].raceName + ' '
+    title += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
+    title += pageData.MRData.RaceTable.Races[0].season + '\n'
+
+    
+    //console.log(finalMessage)
+
+    const resultsEmbed = new EmbedBuilder()
+        .setColor([255, 24, 1])
+        .setTitle(title)
+        .setURL('https://www.formula1.com/en/results.html')
+        // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
+        // .setDescription('Some description here')
+        // .setThumbnail('https://i.imgur.com/AfFp7pu.png')
+        // .addFields(
+        //	{ name: 'description', value: ':checkered_flag: Race Results :checkered_flag:ss' },
+        // 	{ name: '\u200B', value: '\u200B' },
+        // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
+        // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
+        // )
+        .addFields({ name: ':checkered_flag: Race Results :checkered_flag:', value: title })
+        // .setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp()
+        // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+
+    const channel = client.channels.cache.get('1013448201522655283');
+    channel.send({ embeds: [resultsEmbed] });
+}
+
+
 async function driverCommand(message) {
     function invalidDNumInput() {
         message.reply({
@@ -161,6 +215,7 @@ async function driverCommand(message) {
         invalidDNumInput()
     }
 }
+
 async function qualiCommand(message) {
     var rounds = new Map([]);
     var icsAsString = ''
@@ -369,6 +424,11 @@ client.on("messageCreate", message => {
                 message.reply("Add a round number at the end! \"$quali 14\" for example") 
             }
             qualiCommand(message)
+        }
+        else if (message.content.toLowerCase().includes(botPrefix + 'results') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'results') == 0
+        ) {
+            resultsCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'change') &&
             message.content.toLowerCase().indexOf(botPrefix + 'change') == 0
