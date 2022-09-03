@@ -1,11 +1,13 @@
 // import DiscordJS, { ClientVoiceManager, IntentsBitField, time } from 'discord.js'
 //const DiscordJS = require("discord.js")
 import DiscordJS from "discord.js"
+
 import fetch from "node-fetch"
 import dotenv from 'dotenv'
 import fs from 'fs'
 
 import { EmbedBuilder } from 'discord.js'
+
 
 const client = new DiscordJS.Client(
     {
@@ -471,6 +473,7 @@ client.on("messageCreate", message => {
             }
         }
     }
+
 })
 
 client.login(process.env.TOKEN)
