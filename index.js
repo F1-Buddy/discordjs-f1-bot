@@ -88,7 +88,7 @@ async function resultsCommand(message) {
     //     method: 'GET',
     //     redirect: 'follow'
     //   };
-
+      
     //   fetch("http://ergast.com/api/f1/current/last/results.json", requestOptions)
     //     .then(response => response.text())
     //     .then(result => console.log(result))
@@ -96,7 +96,7 @@ async function resultsCommand(message) {
     var dataURL = "http://ergast.com/api/f1/current/last/results.json"
     const fetchedPage = await fetch(dataURL)
     const pageData = await fetchedPage.json();
-
+    
     // console.log(fetchedPage)
 
     var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
@@ -104,10 +104,31 @@ async function resultsCommand(message) {
     title += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
     title += pageData.MRData.RaceTable.Races[0].season + '\n'
 
+    
+    //console.log(finalOutString)
+    finalOutString += "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
+    if (pageData.MRData.RaceTable.Races.length != 0) {
+        var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
+        for (let i = 0; i < resultsArr.length; i++) {
+            var positionString = '```P' + pageData.MRData.RaceTable.Races[0].Results[i].position
+            var driverNameString = pageData.MRData.RaceTable.Races[0].Results[i].Driver.givenName + ' ' +
+                pageData.MRData.RaceTable.Races[0].Results[i].Driver.familyName
+            var finishingStatus = ''
+            if(pageData.MRData.RaceTable.Races[0].Results[i].Time != null) {
+                finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].Time.time
+            } else {
+                finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].status
+            }
+
+            finalOutString += "\t"+positionString + "\t\t\t" + driverNameString + "\t\t\t"
+            finalOutString += finishingStatus + '```'
 
 
-    //console.log(finalMessage)
 
+            }
+            
+        }
+    
 
     const resultsEmbed = new EmbedBuilder()
         .setColor([255, 24, 1])
@@ -127,7 +148,7 @@ async function resultsCommand(message) {
 
         // .setImage('https://i.imgur.com/AfFp7pu.png')
         .setTimestamp()
-    // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+        // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
     message.reply({ embeds: [resultsEmbed] });
 }
