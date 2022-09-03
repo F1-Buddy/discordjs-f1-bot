@@ -83,7 +83,7 @@ async function nextCommand(message) {
 }
 
 async function resultsCommand(message) {
-    var finalMessage = ''
+    var finalOutString = ''
     // var requestOptions = {
     //     method: 'GET',
     //     redirect: 'follow'
@@ -105,7 +105,9 @@ async function resultsCommand(message) {
     title += pageData.MRData.RaceTable.Races[0].season + '\n'
 
 
+
     //console.log(finalMessage)
+
 
     const resultsEmbed = new EmbedBuilder()
         .setColor([255, 24, 1])
@@ -121,6 +123,8 @@ async function resultsCommand(message) {
         // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
         // )
         .addFields({ name: ':checkered_flag: Race Results :checkered_flag:', value: title })
+        .addFields({ name: 'Current Classification', value: finalOutString })
+
         // .setImage('https://i.imgur.com/AfFp7pu.png')
         .setTimestamp()
     // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
