@@ -88,7 +88,7 @@ async function resultsCommand(message) {
     //     method: 'GET',
     //     redirect: 'follow'
     //   };
-      
+
     //   fetch("http://ergast.com/api/f1/current/last/results.json", requestOptions)
     //     .then(response => response.text())
     //     .then(result => console.log(result))
@@ -96,7 +96,7 @@ async function resultsCommand(message) {
     var dataURL = "http://ergast.com/api/f1/current/last/results.json"
     const fetchedPage = await fetch(dataURL)
     const pageData = await fetchedPage.json();
-    
+
     // console.log(fetchedPage)
 
     var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
@@ -104,31 +104,10 @@ async function resultsCommand(message) {
     title += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
     title += pageData.MRData.RaceTable.Races[0].season + '\n'
 
-    
-    //console.log(finalOutString)
-    finalOutString += "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
-    if (pageData.MRData.RaceTable.Races.length != 0) {
-        var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
-        for (let i = 0; i < resultsArr.length; i++) {
-            var positionString = '```P' + pageData.MRData.RaceTable.Races[0].Results[i].position
-            var driverNameString = pageData.MRData.RaceTable.Races[0].Results[i].Driver.givenName + ' ' +
-                pageData.MRData.RaceTable.Races[0].Results[i].Driver.familyName
-            var finishingStatus = ''
-            if(pageData.MRData.RaceTable.Races[0].Results[i].Time != null) {
-                finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].Time.time
-            } else {
-                finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].status
-            }
-
-            finalOutString += "\t"+positionString + "\t\t\t" + driverNameString + "\t\t\t"
-            finalOutString += finishingStatus + '```'
 
 
+    //console.log(finalMessage)
 
-            }
-            
-        }
-    
 
     const resultsEmbed = new EmbedBuilder()
         .setColor([255, 24, 1])
@@ -148,7 +127,7 @@ async function resultsCommand(message) {
 
         // .setImage('https://i.imgur.com/AfFp7pu.png')
         .setTimestamp()
-        // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+    // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
     message.reply({ embeds: [resultsEmbed] });
 }
@@ -163,38 +142,44 @@ async function driverCommand(message) {
     var statArr = ['starts', 'wins', 'podiums', 'careerpoints', 'poles', 'fastestlaps']
     var statStringsArr = ['Started ', ' times', 'Won ', ' times', 'Been on the podium ', ' times', 'Scored ', ' points', 'Claimed ', ' poles', 'Claimed ', ' fastest laps']
     var drivers = new Map([
-        [33, ['Max Verstappen', 'VER']],
-        [1, ['Max Verstappen', 'VER']],
-        [11, ['Sergio Pérez', 'PER']],
-        [16, ['Charles Leclerc', 'LEC']],
-        [55, ['Carlos Sainz_Jr.', 'SAI']],
-        [63, ['George Russell', 'RUS']],
-        [44, ['Lewis Hamilton', 'HAM']],
-        [23, ['Alex Albon', 'ALB']],
-        [6, ['Nicholas Latifi', 'LAT']],
-        [14, ['Fernando Alonso', 'ALO']],
-        [30, ['Esteban Ocon', 'OCO']],
-        [77, ['Valtteri Bottas', 'BOT']],
-        [24, ['Zhou Guanyu', 'ZHO']],
-        [10, ['Pierre Gasly', 'GAS']],
-        [22, ['Yuki Tsunoda', 'TSU']],
-        [20, ['Kevin Magnussen', 'MAG']],
-        [47, ['Mick Schumacher', 'SCH']],
-        [4, ['Lando Norris', 'NOR']],
-        [3, ['Daniel Ricciardo', 'RIC']],
-        [18, ['Lance Stroll', 'STR']],
-        [5, ['Sebastian Vettel', 'VET']],
-        [99, ['Antonio Giovinazzi', 'GIO']],
-        [88, ['Robert Kubica', 'KUB']],
-        [9, ['Nikita Mazepin', 'MAZ']],
-        [26, ['Daniil Kvyat', 'KVY']],
-        [8, ['Romain Grosjean', 'GRO']]
+        [33, ['Max Verstappen', 'VER', 'Max_Verstappen']],
+        [1, ['Max Verstappen', 'VER', 'Max_Verstappen']],
+        [11, ['Sergio Pérez', 'PER', 'Sergio_Pérez']],
+        [16, ['Charles Leclerc', 'LEC', 'Charles_Leclerc']],
+        [55, ['Carlos Sainz_Jr.', 'SAI', 'Carlos_Sainz_Jr.']],
+        [63, ['George Russell', 'RUS', 'George_Russell_(racing_driver)']],
+        [44, ['Lewis Hamilton', 'HAM', 'Lewis_Hamilton']],
+        [23, ['Alex Albon', 'ALB', 'Alex_Albon']],
+        [6, ['Nicholas Latifi', 'LAT', 'Nicholas_Latifi']],
+        [14, ['Fernando Alonso', 'ALO', 'Fernando_Alonso']],
+        [30, ['Esteban Ocon', 'OCO', 'Esteban_Ocon']],
+        [77, ['Valtteri Bottas', 'BOT', 'Valtteri_Bottas']],
+        [24, ['Zhou Guanyu', 'ZHO', 'Zhou_Guanyu']],
+        [10, ['Pierre Gasly', 'GAS', 'Pierre_Gasly']],
+        [22, ['Yuki Tsunoda', 'TSU', 'Yuki_Tsunoda']],
+        [20, ['Kevin Magnussen', 'MAG', 'Kevin_Magnussen']],
+        [47, ['Mick Schumacher', 'SCH', 'Mick_Schumacher']],
+        [4, ['Lando Norris', 'NOR', 'Lando_Norris']],
+        [3, ['Daniel Ricciardo', 'RIC', 'Daniel_Ricciardo']],
+        [18, ['Lance Stroll', 'STR', 'Lance_Stroll']],
+        [5, ['Sebastian Vettel', 'VET', 'Sebastian_Vettel']],
+        [99, ['Antonio Giovinazzi', 'GIO', 'Antonio_Giovinazzi']],
+        [88, ['Robert Kubica', 'KUB', 'Robert_Kubica']],
+        [9, ['Nikita Mazepin', 'MAZ', 'Nikita_Mazepin']],
+        [26, ['Daniil Kvyat', 'KVY', 'Daniil_Kvyat']],
+        [8, ['Romain Grosjean', 'GRO', 'Romain_Grosjean']]
     ]);
     var driverNumber = 0
     var driverName = ''
     if (message.content.length >= 8 && message.content.includes('driver ')) {
+
         //get driver num from user
         driverNumber = (Number)(message.content.substring(8))
+        if (drivers.get(driverNumber) != undefined){
+            var driverProfile = 'https://en.wikipedia.org/wiki/' + drivers.get(driverNumber)[2]
+        }
+        
+
         if (Number.isFinite(driverNumber)) {
             if (drivers.get(driverNumber) == undefined) {
                 invalidDNumInput()
@@ -207,7 +192,7 @@ async function driverCommand(message) {
                     dCode = reqDriverArray[1]
                     driverName = reqDriverArray[0]
                     var statURL = ''
-                    var finalOutString = driverName + ' has\n```'
+                    var finalOutString = ''
                     var outString = ''
                     var fetchArr = []
                     for (let i = 0; i < statArr.length; i++) {
@@ -223,11 +208,40 @@ async function driverCommand(message) {
                         var statString = JSON.stringify(pageData.parse.text)
                         //add stats to final string to be returned
                         outString = statString.substring((statString.indexOf('<p>') + 3), (statString.indexOf('n') - 1))
-                        finalOutString += statStringsArr[i * 2] + outString + statStringsArr[i * 2 + 1] + '\n'
+                        finalOutString += statStringsArr[i * 2] + '**' +outString + '**' +statStringsArr[i * 2 + 1] + '\n'
                     }
-                    finalOutString += '```'
+                    finalOutString += ''
+                    //set profileURL to wikipedia article of driver
+                    var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page='+drivers.get(driverNumber)[2]+'&contentmodel=wikitext&format=json'
+                    const fetchedPage = await fetch(profileURL)
+                    const pageData = await fetchedPage.json()
+                    var statString = JSON.stringify(pageData)
+                    // get link to image on right side of article
+                    var indexOfImage = statString.indexOf('src',(statString.indexOf('infobox-image')))
+                    var imageURL = 'https:'+statString.substring(indexOfImage+6,  (statString.indexOf('decoding',indexOfImage) - 3))
+                    // create embed
+                    const resultsEmbed = new EmbedBuilder()
+                        .setColor([255, 24, 1])
+                        .setTitle(driverName)
+                        .setURL(driverProfile)
+                        //.setThumbnail(imageURL)
+                        .setImage(imageURL)
+                        // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
+                        // .setDescription('Some description here')
+                        // .addFields(
+                        //	{ name: 'description', value: ':checkered_flag: Race Results :checkered_flag:ss' },
+                        // 	{ name: '\u200B', value: '\u200B' },
+                        // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
+                        // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
+                        // )
+                        .addFields({ name: driverName + '\'s Stats:\n', value: finalOutString })
+                        //
+                        //.setTimestamp()
+                    // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+
+                    // message.reply({ embeds: [resultsEmbed] });
                     await message.reply({
-                        content: finalOutString
+                        embeds: [resultsEmbed],
                     })
                 }
 
@@ -357,7 +371,7 @@ async function standingsCommand(message) {
     var standingsURL = 'http://ergast.com/api/f1/'
     if (message.content.includes('wcc') && !message.content.includes('wdc')) {
         year = (Number)(message.content.substring(message.content.indexOf('wcc') + 3))
-        if (year == 0) {year = today.getFullYear().toString()}
+        if (year == 0) { year = today.getFullYear().toString() }
         //console.log(year)
         if (year > 1957) {
             standingsURL += year + '/constructorStandings.json'
@@ -369,12 +383,12 @@ async function standingsCommand(message) {
                 })
             }
             else {
-                finalOutString += "```c\n\t" +year + " CONSTRUCTORS STANDINGS\n\nPosition\t\tPoints\t\tConstructor\n"
+                finalOutString += "```c\n\t" + year + " CONSTRUCTORS STANDINGS\n\nPosition\t\tPoints\t\tConstructor\n"
                 const fetchedPage = await fetch(standingsURL);
                 const pageJSON = await fetchedPage.json();
                 const standingsResults = pageJSON.MRData.StandingsTable.StandingsLists[0]
                 for (let i = 0; i < standingsResults.ConstructorStandings.length; i++) {
-                    finalOutString += "\t"+standingsResults.ConstructorStandings[i].position + "\t\t\t" + standingsResults.ConstructorStandings[i].points + "\t\t\t"
+                    finalOutString += "\t" + standingsResults.ConstructorStandings[i].position + "\t\t\t" + standingsResults.ConstructorStandings[i].points + "\t\t\t"
                     finalOutString += standingsResults.ConstructorStandings[i].Constructor.name + "\n"
                 }
                 finalOutString += "\n```"
@@ -392,7 +406,7 @@ async function standingsCommand(message) {
     }
     else if (message.content.includes('wdc') && !message.content.includes('wcc')) {
         year = (Number)(message.content.substring(message.content.indexOf('wdc') + 3))
-        if (year == 0) {year = today.getFullYear().toString()}
+        if (year == 0) { year = today.getFullYear().toString() }
         //console.log(year)
         if (year > 1957) {
             standingsURL += year + '/driverStandings.json'
@@ -404,12 +418,12 @@ async function standingsCommand(message) {
                 })
             }
             else {
-                finalOutString += finalOutString += "```c\n\t" +year + " DRIVERS STANDINGS\n\nPosition\t\tPoints\t\tDriver\n"
+                finalOutString += finalOutString += "```c\n\t" + year + " DRIVERS STANDINGS\n\nPosition\t\tPoints\t\tDriver\n"
                 const fetchedPage = await fetch(standingsURL);
                 const pageJSON = await fetchedPage.json();
                 const standingsResults = pageJSON.MRData.StandingsTable.StandingsLists[0]
                 for (let i = 0; i < standingsResults.DriverStandings.length; i++) {
-                    finalOutString += "\t"+standingsResults.DriverStandings[i].position + "\t\t\t" + standingsResults.DriverStandings[i].points + "\t\t\t"
+                    finalOutString += "\t" + standingsResults.DriverStandings[i].position + "\t\t\t" + standingsResults.DriverStandings[i].points + "\t\t\t"
                     finalOutString += standingsResults.DriverStandings[i].Driver.givenName + ' ' + standingsResults.DriverStandings[i].Driver.familyName + '\n'
                 }
                 finalOutString += "\n```"
@@ -446,6 +460,9 @@ client.on("messageCreate", message => {
         else if (message.content.toLowerCase().includes(botPrefix + 'quali') &&
             message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
         ) {
+            if (message.content.toLowerCase().includes(botPrefix + 'quali') && message.content.length == 6) {
+                message.reply("Add a round number at the end! \"$quali 14\" for example")
+            }
             qualiCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'results') &&
@@ -465,8 +482,8 @@ client.on("messageCreate", message => {
             (message.content.toLowerCase().includes(botPrefix + 'wcc') &&
                 message.content.toLowerCase().indexOf(botPrefix + 'wcc') == 0)
         ) {
-            if (message.content.toLowerCase().includes('standings')){
-                message.reply("Try \"$wcc\" or \"$wdc 2013\" for example") 
+            if (message.content.toLowerCase().includes('standings')) {
+                message.reply("Try \"$wcc\" or \"$wdc 2013\" for example")
             }
             else {
                 standingsCommand(message)
