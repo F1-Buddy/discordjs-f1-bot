@@ -312,7 +312,7 @@ async function newDriverCommand(message) {
             //console.log(statStringsArr[i])
             const fetchedPage = await fetch(profileURL)
             const pageData = await fetchedPage.text()
-            console.log(altStatArr[i])
+            //console.log(altStatArr[i])
             var searchIndex = pageData.indexOf(altStatArr[i])
             var currentStatString = pageData.substring(pageData.indexOf('data\\\">',searchIndex)+7,pageData.indexOf('</td>',searchIndex))
             outString += altStatArr[i] + ': ' + currentStatString + '\n'
