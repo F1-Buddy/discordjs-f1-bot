@@ -253,7 +253,7 @@ async function driverCommand(message) {
 async function newDriverCommand(message) {
     function invalidDriverInput() {
         message.reply({
-            content: 'Please enter a valid driver number or name: $driver 33 / $driver max_verstappen / $driver hamilton'
+            content: 'Please enter a valid driver number or name: $driver 33 / $driver hamilton / $driver max_verstappen'
         })
     }
     async function replyStats(message, item) {
@@ -305,6 +305,7 @@ async function newDriverCommand(message) {
         })
     }
     async function altStats(message, item) {
+        //console.log("using alternate method to get stats...")
         var outString = ''
         var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
         var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
@@ -315,7 +316,18 @@ async function newDriverCommand(message) {
             //console.log(altStatArr[i])
             var searchIndex = pageData.indexOf(altStatArr[i])
             var currentStatString = pageData.substring(pageData.indexOf('data\\\">',searchIndex)+7,pageData.indexOf('</td>',searchIndex))
-            outString += altStatArr[i] + ': ' + currentStatString + '\n'
+            //console.log(currentStatString)
+            if (!currentStatString.includes('/a')){
+                outString += altStatArr[i] + ': ' + currentStatString + '\n'
+            }
+            else {
+                if (currentStatString.indexOf('<') == 0){
+                    outString += altStatArr[i] + ': ' + currentStatString.substring(currentStatString.indexOf('\\\">')+3,currentStatString.indexOf('</a>')) + '\n'
+                }
+                else {
+                    outString += altStatArr[i] + ': ' + currentStatString.substring(0,currentStatString.indexOf('<')) + '\n'
+                }
+            }
         }
         
         return outString
@@ -570,7 +582,7 @@ client.on("messageCreate", message => {
             message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
         ) {
             if (message.content.toLowerCase().includes(botPrefix + 'quali') && message.content.length == 6) {
-                message.reply("Add a round number at the end! \"$quali 14\" for example")
+                message.reply("Add a round number at the end! \""+botPrefix+"quali 14\" for example")
             }
             qualiCommand(message)
         }
@@ -592,7 +604,7 @@ client.on("messageCreate", message => {
                 message.content.toLowerCase().indexOf(botPrefix + 'wcc') == 0)
         ) {
             if (message.content.toLowerCase().includes('standings')) {
-                message.reply("Try \"$wcc\" or \"$wdc 2013\" for example")
+                message.reply("Try \""+botPrefix+"wcc\" or \""+botPrefix+"wdc 2013\" for example")
             }
             else {
                 standingsCommand(message)
