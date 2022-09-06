@@ -126,7 +126,7 @@ async function resultsCommand(message) {
     message.reply({ embeds: [resultsEmbed] });
 }
 
-
+// superceded by newDriverCommand
 async function driverCommand(message) {
     function invalidDNumInput() {
         message.reply({
@@ -169,10 +169,10 @@ async function driverCommand(message) {
 
         //get driver num from user
         driverNumber = (Number)(message.content.substring(8))
-        if (drivers.get(driverNumber) != undefined){
+        if (drivers.get(driverNumber) != undefined) {
             var driverProfile = 'https://en.wikipedia.org/wiki/' + drivers.get(driverNumber)[2]
         }
-        
+
 
         if (Number.isFinite(driverNumber)) {
             if (drivers.get(driverNumber) == undefined) {
@@ -202,17 +202,17 @@ async function driverCommand(message) {
                         var statString = JSON.stringify(pageData.parse.text)
                         //add stats to final string to be returned
                         outString = statString.substring((statString.indexOf('<p>') + 3), (statString.indexOf('n') - 1))
-                        finalOutString += statStringsArr[i * 2] + '**' +outString + '**' +statStringsArr[i * 2 + 1] + '\n'
+                        finalOutString += statStringsArr[i * 2] + '**' + outString + '**' + statStringsArr[i * 2 + 1] + '\n'
                     }
                     finalOutString += ''
                     //set profileURL to wikipedia article of driver
-                    var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page='+drivers.get(driverNumber)[2]+'&contentmodel=wikitext&format=json'
+                    var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + drivers.get(driverNumber)[2] + '&contentmodel=wikitext&format=json'
                     const fetchedPage = await fetch(profileURL)
                     const pageData = await fetchedPage.json()
                     var statString = JSON.stringify(pageData)
                     // get link to image on right side of article
-                    var indexOfImage = statString.indexOf('src',(statString.indexOf('infobox-image')))
-                    var imageURL = 'https:'+statString.substring(indexOfImage+6,  (statString.indexOf('decoding',indexOfImage) - 3))
+                    var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
+                    var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
                     // create embed
                     const resultsEmbed = new EmbedBuilder()
                         .setColor([255, 24, 1])
@@ -229,8 +229,8 @@ async function driverCommand(message) {
                         // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
                         // )
                         .addFields({ name: driverName + '\'s Stats:\n', value: finalOutString })
-                        //
-                        //.setTimestamp()
+                    //
+                    //.setTimestamp()
                     // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
                     // message.reply({ embeds: [resultsEmbed] });
@@ -249,6 +249,120 @@ async function driverCommand(message) {
         invalidDNumInput()
     }
 }
+
+async function newDriverCommand(message) {
+    function invalidDriverInput() {
+        message.reply({
+            content: 'Please enter a valid driver number or name: $driver 33 / $driver max_verstappen / $driver hamilton'
+        })
+    }
+    async function replyStats(message, item) {
+        var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+        var statURL = ''
+        var finalOutString = ''
+        var outString = ''
+        var fetchArr = []
+        for (let i = 0; i < statArr.length; i++) {
+            statURL = ''
+            statURL += 'https://en.wikipedia.org/w/api.php?action=parse&text={{F1stat|'
+            statURL += item.code + '|' + statArr[i] + '}}&contentmodel=wikitext&format=json'
+            //console.log(statURL)
+
+            //push urls for statistics to an array
+            fetchArr.push(statURL)
+            //fetch each url
+            const fetchedPage = await fetch(fetchArr[i])
+            const pageData = await fetchedPage.json()
+            var statString = JSON.stringify(pageData.parse.text)
+            //add stats to final string to be returned
+            outString = statString.substring((statString.indexOf('<p>') + 3), (statString.indexOf('n') - 1))
+            //console.log(outString)
+            if (!outString.includes('mw-parser-output')) {
+                finalOutString += statStringsArr[i * 2] + '**' + outString + '**' + statStringsArr[i * 2 + 1] + '\n'
+            }
+        }
+        if (outString.includes('mw-parser-output')) {
+            finalOutString = await altStats(message, item)
+        }
+        finalOutString += ''
+        //set profileURL to wikipedia article of driver
+        var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
+        const fetchedPage = await fetch(profileURL)
+        const pageData = await fetchedPage.json()
+        var statString = JSON.stringify(pageData)
+        // get link to image on right side of article
+        var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
+        var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
+        // create embed
+        const resultsEmbed = new EmbedBuilder()
+            .setColor([255, 24, 1])
+            .setTitle(driverInfoArray[1])
+            .setURL(item.url)
+            .setImage(imageURL)
+            .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
+        await message.reply({
+            embeds: [resultsEmbed],
+        })
+    }
+    async function altStats(message, item) {
+        var outString = ''
+        var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+        var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
+        for (let i = 0; i < altStatArr.length; i++) {
+            //console.log(statStringsArr[i])
+            const fetchedPage = await fetch(profileURL)
+            const pageData = await fetchedPage.text()
+            console.log(altStatArr[i])
+            var searchIndex = pageData.indexOf(altStatArr[i])
+            var currentStatString = pageData.substring(pageData.indexOf('data\\\">',searchIndex)+7,pageData.indexOf('</td>',searchIndex))
+            outString += altStatArr[i] + ': ' + currentStatString + '\n'
+        }
+        
+        return outString
+    }
+    var statArr = ['starts', 'wins', 'podiums', 'careerpoints', 'poles', 'fastestlaps']
+    var altStatArr = ['Entries', 'Wins', 'Podiums', 'Career points', 'Pole positions', 'Fastest laps']
+    var statStringsArr = ['Started ', ' times', 'Won ', ' times', 'Been on the podium ', ' times', 'Scored ', ' points', 'Claimed ', ' poles', 'Claimed ', ' fastest laps']
+    //var drivers = new Map()
+
+    if (message.content.length >= 8 && message.content.includes('driver ')) {
+
+        //get driver num from user
+        var driverNumber = (message.content.substring(8))
+        const fetchedPage = await fetch('https://ergast.com/api/f1/drivers.json?limit=1000&offset=0')
+        const pageData = await fetchedPage.json()
+        var driverArray = pageData.MRData.DriverTable.Drivers
+        var driverFound = false;
+        driverArray.forEach(async function (item) {
+            var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+            //console.log(item.givenName + " " + item.familyName)
+            if ((Number)(driverNumber) > 0) {
+
+                if (item.permanentNumber == driverNumber) {
+                    driverFound = true
+                    replyStats(message, item)
+                }
+            }
+            else if (item.driverId == driverNumber) {
+
+                //console.log(driverInfoArray)
+                if (driverInfoArray != undefined) {
+                    driverFound = true
+                    replyStats(message, item)
+                }
+            }
+
+
+        })
+        if (!driverFound) {
+            invalidDriverInput()
+        }
+    }
+    else {
+        invalidDriverInput()
+    }
+}
+
 
 async function qualiCommand(message) {
     var rounds = new Map([]);
@@ -449,7 +563,8 @@ client.on("messageCreate", message => {
         else if (message.content.toLowerCase().includes(botPrefix + 'driver') &&
             message.content.toLowerCase().indexOf(botPrefix + 'driver') == 0
         ) {
-            driverCommand(message)
+            //driverCommand(message)
+            newDriverCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'quali') &&
             message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
