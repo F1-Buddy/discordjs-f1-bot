@@ -500,8 +500,13 @@ async function newQualiCommand(message) {
                     // await console.log(q2Time)
                     // await console.log(q3Time)
                     if (q3Time != undefined) {
-                        finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' + '\n```c\n' + q3Time + '```\n'
+                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
                     }
+                    else if (((Number)(qualiArray[i].position)) < 11){
+                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                    }
+                    
+                    
                 }
                 finalOutString += '\n'
                 // create embed
@@ -544,7 +549,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q2Time = qualiArray[i].Q2
                                         if (q2Time != undefined) {
-                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' + '\n```c\n' + q2Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                                        }
+                                        else if (((Number)(qualiArray[i].position)) < 16){
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
@@ -566,7 +574,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q3Time = qualiArray[i].Q3
                                         if (q3Time != undefined) {
-                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' + '\n```c\n' + q3Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                                        }
+                                        else {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
@@ -592,7 +603,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q2Time = qualiArray[i].Q2
                                         if (q2Time != undefined) {
-                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' +'\n```c\n' + q2Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' +'\n```c\n' + q2Time + '```\n'
+                                        }
+                                        else if (((Number)(qualiArray[i].position)) < 16){
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
@@ -614,7 +628,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q1Time = qualiArray[i].Q1
                                         if (q1Time != undefined) {
-                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' +'\n```c\n' + q1Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' +'\n```c\n' + q1Time + '```\n'
+                                        }
+                                        else {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
