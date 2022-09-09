@@ -2,9 +2,10 @@
 
 ### To-Do
 - [ ] Migrate Typescript build of F1 Buddy to strictly Javascript
-    * [ ] Add settings file to import/change prefix character
-    * [ ] Add command checks to ensure they are valid (fix things like "$n$driver 1")
-    * [ ] Add pics and discord emojis to commands
+    * [x] Add settings file to import/change prefix character
+    * [x] Add command checks to ensure they are valid (fix things like "$n$driver 1")
+    * [x] Add pics
+    * [ ] Add discord emojis to commands
 
 ### Previous To-Do List
 - [x] Fix string error when calling next event
