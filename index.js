@@ -337,7 +337,7 @@ async function newDriverCommand(message) {
                 statString.indexOf('src', flagiconIndex) + 6,
                 statString.indexOf('decoding', flagiconIndex) - 3
             )
-            console.log(thumbURL)
+            //console.log(thumbURL)
         }
 
 
@@ -346,7 +346,7 @@ async function newDriverCommand(message) {
         // senna -> brazilians -> get flag from brazilians article
         // some real stupid shit
         else {
-            console.log('getting from nationality article')
+            //console.log('getting from nationality article')
             var natArticle = statString.substring(
                 statString.indexOf('a href', statString.indexOf('Nationality')) + 15,
                 statString.indexOf('title', statString.indexOf('Nationality')) - 3
