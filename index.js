@@ -94,7 +94,7 @@ async function resultsCommand(message) {
     //     method: 'GET',
     //     redirect: 'follow'
     //   };
-      
+
     //   fetch("http://ergast.com/api/f1/current/last/results.json", requestOptions)
     //     .then(response => response.text())
     //     .then(result => console.log(result))
@@ -102,7 +102,7 @@ async function resultsCommand(message) {
     var dataURL = "http://ergast.com/api/f1/current/last/results.json"
     const fetchedPage = await fetch(dataURL)
     const pageData = await fetchedPage.json();
-    
+
     // console.log(fetchedPage)
 
     var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
@@ -110,7 +110,7 @@ async function resultsCommand(message) {
     title += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
     title += pageData.MRData.RaceTable.Races[0].season + '\n'
 
-    
+
     //console.log(finalOutString)
     finalOutString += "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
     if (pageData.MRData.RaceTable.Races.length != 0) {
@@ -120,21 +120,21 @@ async function resultsCommand(message) {
             var driverNameString = pageData.MRData.RaceTable.Races[0].Results[i].Driver.givenName + ' ' +
                 pageData.MRData.RaceTable.Races[0].Results[i].Driver.familyName
             var finishingStatus = ''
-            if(pageData.MRData.RaceTable.Races[0].Results[i].Time != null) {
+            if (pageData.MRData.RaceTable.Races[0].Results[i].Time != null) {
                 finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].Time.time
             } else {
                 finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].status
             }
 
-            finalOutString += "\t"+positionString + "\t\t\t" + driverNameString + "\t\t\t"
+            finalOutString += "\t" + positionString + "\t\t\t" + driverNameString + "\t\t\t"
             finalOutString += finishingStatus + '```'
 
 
 
-            }
-            
         }
-    
+
+    }
+
 
     const resultsEmbed = new EmbedBuilder()
         .setColor([255, 24, 1])
@@ -154,7 +154,7 @@ async function resultsCommand(message) {
 
         // .setImage('https://i.imgur.com/AfFp7pu.png')
         .setTimestamp()
-        // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+    // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
     message.reply({ embeds: [resultsEmbed] });
 }
@@ -327,10 +327,50 @@ async function newDriverCommand(message) {
         // get link to image on right side of article
         var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
         var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
-        // create embed
+        
+        // get flag icon
+        var flagiconIndex = statString.indexOf('flagicon')
+        //console.log(flagiconIndex)
+        //checks to see if flagicon is at top of page, sometimes drivers like senna have no flagicon but have hidden UK flagicon at bottom
+        if (flagiconIndex < 20000) {
+            var thumbURL = 'https:' + statString.substring(
+                statString.indexOf('src', flagiconIndex) + 6,
+                statString.indexOf('decoding', flagiconIndex) - 3
+            )
+            console.log(thumbURL)
+        }
+
+
+        // this is dumb as shit
+        // if flag isn't on driver's article, goes to article about to drivers nationality, gets flag image from there
+        // senna -> brazilians -> get flag from brazilians article
+        // some real stupid shit
+        else {
+            console.log('getting from nationality article')
+            var natArticle = statString.substring(
+                statString.indexOf('a href', statString.indexOf('Nationality')) + 15,
+                statString.indexOf('title', statString.indexOf('Nationality')) - 3
+            )
+            var nationalityURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + natArticle
+                + '&contentmodel=wikitext&format=json';
+            //console.log(nationalityURL)
+            const fetchedPage = await fetch(nationalityURL)
+            const pageData = await fetchedPage.json()
+            var statString = JSON.stringify(pageData)
+            var flagURL = 'https:' + statString.substring(
+                statString.indexOf('src',statString.indexOf('img alt=\\\"Flag'))+6,
+                statString.indexOf('decoding',statString.indexOf('img alt=\\\"Flag'))-3
+            )
+            //console.log(flagURL)
+            thumbURL = flagURL
+        }
+        //console.log('thumbURL = ' + thumbURL)
+
+        //create embed and reply
         const driverEmbed = new EmbedBuilder()
             .setColor([255, 24, 1])
             .setTitle(driverInfoArray[1])
+            .setThumbnail(thumbURL)
             .setURL(item.url)
             .setImage(imageURL)
             .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
@@ -530,13 +570,13 @@ async function newQualiCommand(message) {
                     // await console.log(q2Time)
                     // await console.log(q3Time)
                     if (q3Time != undefined) {
-                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
                     }
-                    else if (((Number)(qualiArray[i].position)) < 11){
-                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                    else if (((Number)(qualiArray[i].position)) < 11) {
+                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                     }
-                    
-                    
+
+
                 }
                 finalOutString += '\n'
                 // create embed
@@ -579,10 +619,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q2Time = qualiArray[i].Q2
                                         if (q2Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
                                         }
-                                        else if (((Number)(qualiArray[i].position)) < 16){
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                        else if (((Number)(qualiArray[i].position)) < 16) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
@@ -604,10 +644,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q3Time = qualiArray[i].Q3
                                         if (q3Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
                                         }
                                         else {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
@@ -633,10 +673,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q2Time = qualiArray[i].Q2
                                         if (q2Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' +'\n```c\n' + q2Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
                                         }
-                                        else if (((Number)(qualiArray[i].position)) < 16){
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                        else if (((Number)(qualiArray[i].position)) < 16) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
@@ -658,10 +698,10 @@ async function newQualiCommand(message) {
                                         var constructorName = qualiArray[i].Constructor.name
                                         var q1Time = qualiArray[i].Q1
                                         if (q1Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName  + '*\n' + '**' +driverNameString + '**' +'\n```c\n' + q1Time + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
                                         }
                                         else {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' +driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
                                         }
                                     }
 
@@ -679,33 +719,15 @@ async function newQualiCommand(message) {
                         //interaction.deferReply()
                     }
                 })
-
-                //await messageReply.react('▶️')
-                //await messageReply.react('◀️')
-
-
-
-
-
-
-
             }
             else {
                 invalidInput(message)
             }
-
-
-
-
         }
         else {
             invalidInput(message)
         }
     }
-    else {
-        invalidInput(message)
-    }
-
 }
 
 function changeCommand(message) {
