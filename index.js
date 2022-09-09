@@ -321,6 +321,7 @@ async function newDriverCommand(message) {
         finalOutString += ''
         //set profileURL to wikipedia article of driver
         var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
+        //console.log(profileURL)
         const fetchedPage = await fetch(profileURL)
         const pageData = await fetchedPage.json()
         var statString = JSON.stringify(pageData)
@@ -328,9 +329,15 @@ async function newDriverCommand(message) {
         var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
         var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
         // create embed
+        var thumbURL = 'https:' + statString.substring(
+            statString.indexOf('src',statString.indexOf('flagicon'))+6,
+            statString.indexOf('decoding',statString.indexOf('flagicon'))-3
+        )
+        //console.log(thumbURL)
         const driverEmbed = new EmbedBuilder()
             .setColor([255, 24, 1])
             .setTitle(driverInfoArray[1])
+            .setThumbnail(thumbURL)
             .setURL(item.url)
             .setImage(imageURL)
             .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
@@ -679,33 +686,15 @@ async function newQualiCommand(message) {
                         //interaction.deferReply()
                     }
                 })
-
-                //await messageReply.react('▶️')
-                //await messageReply.react('◀️')
-
-
-
-
-
-
-
             }
             else {
                 invalidInput(message)
             }
-
-
-
-
         }
         else {
             invalidInput(message)
         }
     }
-    else {
-        invalidInput(message)
-    }
-
 }
 
 function changeCommand(message) {
