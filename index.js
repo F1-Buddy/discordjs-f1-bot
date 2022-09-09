@@ -1,15 +1,14 @@
 // import DiscordJS, { ClientVoiceManager, IntentsBitField, time } from 'discord.js'
 //const DiscordJS = require("discord.js")
-import DiscordJS from "discord.js"
+import DiscordJS, { ButtonStyle } from "discord.js"
 //import paginationEmbed from "discordjs-button-pagination"
 //import { MessageActionRow, ButtonInteraction } from "discord.js"
 //import { ButtonInteraction } from "discord.js"
-const { MessageActionRow, MessageButton } = import('discord.js')
+//const { MessageActionRow, MessageButton } = import('discord.js')
 import fetch from "node-fetch"
 import dotenv from 'dotenv'
 import fs from 'fs'
-
-import { EmbedBuilder } from 'discord.js'
+import { ButtonBuilder, ActionRowBuilder, EmbedBuilder } from 'discord.js'
 
 const client = new DiscordJS.Client(
     {
@@ -491,6 +490,7 @@ async function newQualiCommand(message) {
                 for (let i = 0; i < qualiArray.length; i++) {
                     var positionString = '**P' + qualiArray[i].position + '**'
                     var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                    var constructorName = qualiArray[i].Constructor.name
                     var q1Time = qualiArray[i].Q1
                     var q2Time = qualiArray[i].Q2
                     var q3Time = qualiArray[i].Q3
@@ -500,34 +500,137 @@ async function newQualiCommand(message) {
                     // await console.log(q2Time)
                     // await console.log(q3Time)
                     if (q3Time != undefined) {
-                        finalOutString += positionString + '\n' + driverNameString + '\n```c\n' + q3Time + '```\n'
+                        finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' + '\n```c\n' + q3Time + '```\n'
                     }
                 }
                 finalOutString += '\n'
                 // create embed
-                const qualiEmbed = new EmbedBuilder()
+                var qualiEmbed = new EmbedBuilder()
                     .setColor([255, 24, 1])
                     .setTitle('Quali Results for ' + raceName)
                     //.setURL(item.url)
                     //.setImage(imageURL)
-                    .addFields({ name: 'Q3', value: finalOutString })
-
-                // const row = 
-                //         new MessageButton()
-                //             .setCustomId('primary')
-                //             .setLabel('Primary')
-                //             .setStyle('PRIMARY')
-                //     ;
+                    .addFields({ name: 'Q3 Results', value: finalOutString })
 
 
-
-
-                //await message.reply({ content: 'I think you should,' });
                 //reply with embed
                 const messageReply = await message.reply({
-                    //embeds: [qualiEmbed]
-                    content: 'testing reactions',
-                    //components: [row],
+                    embeds: [qualiEmbed],
+                    //content: 'testing reactions',
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+                client.on('interactionCreate', async (interaction) => {
+                    if (interaction.isButton) {
+                        if (interaction.customId == 'lastButton') {
+                            if (qualiEmbed.data.fields[0].name.includes('Q1')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) > 10) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q2Time = qualiArray[i].Q2
+                                        if (q2Time != undefined) {
+                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' + '\n```c\n' + q2Time + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q2 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+                                await messageReply.edit({
+                                    embeds: [qualiEmbed]
+                                })
+                            }
+                            else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) < 11) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q3Time = qualiArray[i].Q3
+                                        if (q3Time != undefined) {
+                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' + '\n```c\n' + q3Time + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q3 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
+                                await messageReply.edit({
+                                    embeds: [qualiEmbed]
+                                })
+                            }
+                            //console.log('last button clicked')
+                            await interaction.update({})
+                        }
+                        else if (interaction.customId == 'nextButton') {
+                            if (qualiEmbed.data.fields[0].name.includes('Q3')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) > 10) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q2Time = qualiArray[i].Q2
+                                        if (q2Time != undefined) {
+                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' +'\n```c\n' + q2Time + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q2 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+                                await messageReply.edit({
+                                    embeds: [qualiEmbed]
+                                })
+                            }
+                            else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) > 15) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q1Time = qualiArray[i].Q1
+                                        if (q1Time != undefined) {
+                                            finalOutString += positionString + '\n*' + driverNameString + '*\n' + '**' +constructorName + '**' +'\n```c\n' + q1Time + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q1 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
+                                await messageReply.edit({
+                                    embeds: [qualiEmbed]
+                                })
+                            }
+
+                            await interaction.update({})
+                        }
+
+                        //interaction.deferReply()
+                    }
                 })
 
                 //await messageReply.react('▶️')
@@ -538,23 +641,6 @@ async function newQualiCommand(message) {
 
 
 
-                // const filter = (reaction, user) => {
-                //     return ['▶️','◀️'].includes(reaction.emoji.name) && user.id === interaction.user.id;
-                // };
-                // messageReply.awaitReactions({ filter, max: 1, time: 6000, errors: ['time'] })
-                //     .then(collected => {
-                //         const reaction = collected.first();
-
-                //         if (reaction.emoji.name === '▶️') {
-                //             console.log('reacted')
-                //             messageReply.reply('right arrow.');
-                //         } else {
-                //             messageReply.reply('left arrow');
-                //         }
-                //     })
-                //     .catch(collected => {
-                //         messageReply.reply('no reaction');
-                //     });
 
             }
             else {
