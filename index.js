@@ -327,13 +327,17 @@ async function newDriverCommand(message) {
         // get link to image on right side of article
         var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
         var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
+        
         // get flag icon
         var flagiconIndex = statString.indexOf('flagicon')
-        if (flagiconIndex < 5000) {
+        //console.log(flagiconIndex)
+        //checks to see if flagicon is at top of page, sometimes drivers like senna have no flagicon but have hidden UK flagicon at bottom
+        if (flagiconIndex < 20000) {
             var thumbURL = 'https:' + statString.substring(
                 statString.indexOf('src', flagiconIndex) + 6,
                 statString.indexOf('decoding', flagiconIndex) - 3
             )
+            console.log(thumbURL)
         }
 
 
@@ -342,6 +346,7 @@ async function newDriverCommand(message) {
         // senna -> brazilians -> get flag from brazilians article
         // some real stupid shit
         else {
+            console.log('getting from nationality article')
             var natArticle = statString.substring(
                 statString.indexOf('a href', statString.indexOf('Nationality')) + 15,
                 statString.indexOf('title', statString.indexOf('Nationality')) - 3
