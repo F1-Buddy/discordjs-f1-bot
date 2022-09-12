@@ -42,7 +42,7 @@ settingsArr = settingsString.split('\n')
 settingsString = ''
 var botPrefix = '' + settingsArr[0].substring(5, 6)
 
-
+// superceded by newNextCommand
 async function nextCommand(message) {
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
     var calendarAsString = ''
@@ -125,7 +125,7 @@ async function newNextCommand(message) {
             nextBool = true
         }
     }
-    var finalOutString = "**Schedule for upcoming weekend:**\n"
+    var finalOutString = "**Schedule for upcoming race weekend:**\n"
     var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
     var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
 
