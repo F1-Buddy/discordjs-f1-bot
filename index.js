@@ -125,10 +125,45 @@ async function newNextCommand(message) {
             nextBool = true
         }
     }
+    var finalOutString = "**Schedule for upcoming weekend:**\n"
+    var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+    var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
 
-    var nextEventName = eventTimes[nextIndex * 2 + 1].substring(0, eventTimes[nextIndex * 2 + 1].length - 1);
-    var nextEventTime = eventDateArr[nextIndex].toLocaleString()
-    var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
+    // gets whole weekend 
+    if (nextEventName.indexOf('Practice 1') >= 0) {
+        // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
+        for (let i = 0; i < 5; i++) {
+            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            // console.log(nextEventName)
+            // console.log(nextEventTime)
+            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+        }
+    }
+    else {
+        // console.log('next event does not include \"Practice 1\"\nNext event = ' + nextEventName)
+        // let i = 0
+        while (nextEventName.indexOf('Practice 1') < 0){
+            nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
+            nextIndex--
+        }
+        // finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+        // console.log(nextEventName)
+        // console.log(nextEventTime)
+        for (let i = 1; i < 6; i++) {
+            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            // console.log(nextEventName)
+            // console.log(nextEventTime)
+            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+        }
+        //console.log(nextEventName.indexOf('Practice 1'))
+    }
+
+
+
+    // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
     message.reply({
         content: finalOutString
     })
@@ -373,7 +408,7 @@ async function newDriverCommand(message) {
         // get link to image on right side of article
         var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
         var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
-        
+
         // get flag icon
         var flagiconIndex = statString.indexOf('flagicon')
         //console.log(flagiconIndex)
@@ -404,8 +439,8 @@ async function newDriverCommand(message) {
             const pageData = await fetchedPage.json()
             var statString = JSON.stringify(pageData)
             var flagURL = 'https:' + statString.substring(
-                statString.indexOf('src',statString.indexOf('img alt=\\\"Flag'))+6,
-                statString.indexOf('decoding',statString.indexOf('img alt=\\\"Flag'))-3
+                statString.indexOf('src', statString.indexOf('img alt=\\\"Flag')) + 6,
+                statString.indexOf('decoding', statString.indexOf('img alt=\\\"Flag')) - 3
             )
             //console.log(flagURL)
             thumbURL = flagURL
@@ -888,7 +923,7 @@ async function standingsCommand(message) {
 client.on("messageCreate", message => {
     if (message.author.bot == false) {
         if (message.content.toLowerCase().includes(botPrefix + 'n') && message.content.toLowerCase().indexOf(botPrefix + 'n') == 0) {
-            nextCommand(message)
+            newNextCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'driver') &&
             message.content.toLowerCase().indexOf(botPrefix + 'driver') == 0
