@@ -88,6 +88,52 @@ async function nextCommand(message) {
     })
 }
 
+async function newNextCommand(message) {
+    var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
+    var calendarAsString = ''
+    var calSubs = []
+    var eventTimes = []
+    var today = new Date();
+    var nextBool = false;
+    var nextIndex = -1;
+    var eventDateArr = []
+    //fetch .ics file and convert it to string, and split lines into an array
+    const fetchedPage = await fetch(calendarURL)
+    calendarAsString = await fetchedPage.text()
+    //console.log(calendarAsString)
+    calSubs = calendarAsString.split('\n')
+
+    //check for start times and add the times to dateArr as a Date()
+    //also add event names to eventTimes array which contains start times and event names as strings
+    for (let i = 0; i < calSubs.length; i++) {
+        if (calSubs[i].includes('DTSTART;')) {
+            var eventYear = calSubs[i].substring(27, 31)
+            var eventMonth = calSubs[i].substring(31, 33) - 1
+            var eventDay = calSubs[i].substring(33, 35)
+            var eventHour = calSubs[i].substring(36, 38) //- 5
+            var eventMinute = calSubs[i].substring(38, 40)
+            eventDateArr.push(new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1, eventMinute)))
+            eventTimes.push(calSubs[i].substring(27))
+            eventTimes.push(calSubs[i + 2].substring(8))
+        }
+    }
+
+    //check which event is next by comapring Date objects and use that index to get it into the message
+    while (!nextBool) {
+        nextIndex++
+        if (eventDateArr[nextIndex] > today) {
+            nextBool = true
+        }
+    }
+
+    var nextEventName = eventTimes[nextIndex * 2 + 1].substring(0, eventTimes[nextIndex * 2 + 1].length - 1);
+    var nextEventTime = eventDateArr[nextIndex].toLocaleString()
+    var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
+    message.reply({
+        content: finalOutString
+    })
+}
+
 async function resultsCommand(message) {
     var finalOutString = ''
     // var requestOptions = {
@@ -450,7 +496,7 @@ async function newDriverCommand(message) {
     }
 }
 
-
+// superceded by newQualiCommand
 async function qualiCommand(message) {
     var rounds = new Map([]);
     var icsAsString = ''
