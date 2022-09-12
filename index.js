@@ -316,7 +316,7 @@ async function newDriverCommand(message) {
             }
         }
         if (outString.includes('mw-parser-output')) {
-            finalOutString = await altStats(message, item)
+            finalOutString = await altStats(item)
         }
         finalOutString += ''
         //set profileURL to wikipedia article of driver
@@ -379,10 +379,10 @@ async function newDriverCommand(message) {
         })
     }
     //alternate method to get stats if driver not in 2020-2022 grid
-    async function altStats(message, item) {
+    async function altStats(item) {
         //console.log("using alternate method to get stats...")
         var outString = ''
-        var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+        //var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
         var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
         for (let i = 0; i < altStatArr.length; i++) {
             //console.log(statStringsArr[i])
