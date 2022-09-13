@@ -135,22 +135,15 @@ async function newNextCommand(message) {
         for (let i = 0; i < 5; i++) {
             nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
             nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
-            // console.log(nextEventName)
-            // console.log(nextEventTime)
             finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
         }
     }
     else {
-        // console.log('next event does not include \"Practice 1\"\nNext event = ' + nextEventName)
-        // let i = 0
         while (nextEventName.indexOf('Practice 1') < 0){
             nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
             nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
             nextIndex--
         }
-        // finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
-        // console.log(nextEventName)
-        // console.log(nextEventTime)
         for (let i = 1; i < 6; i++) {
             nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
             nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
@@ -448,13 +441,23 @@ async function newDriverCommand(message) {
         //console.log('thumbURL = ' + thumbURL)
 
         //create embed and reply
+
         const driverEmbed = new EmbedBuilder()
             .setColor([255, 24, 1])
             .setTitle(driverInfoArray[1])
-            .setThumbnail(thumbURL)
             .setURL(item.url)
-            .setImage(imageURL)
             .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
+
+
+        ///////////////////////////////////////////////////
+        //      fix
+        ////////
+        if (!thumbURL.includes("{") && !imageURL.includes("{")){
+            driverEmbed
+            .setThumbnail(thumbURL)
+            .setImage(imageURL)
+        }
+        
         await message.reply({
             embeds: [driverEmbed],
         })
