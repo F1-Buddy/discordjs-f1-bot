@@ -42,7 +42,7 @@ settingsArr = settingsString.split('\n')
 settingsString = ''
 var botPrefix = '' + settingsArr[0].substring(5, 6)
 
-
+// superceded by newNextCommand
 async function nextCommand(message) {
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
     var calendarAsString = ''
@@ -85,6 +85,80 @@ async function nextCommand(message) {
     var nextEventTime = eventDateArr[nextIndex].toLocaleString()
     message.reply({
         content: 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``'
+    })
+}
+
+async function newNextCommand(message) {
+    var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
+    var calendarAsString = ''
+    var calSubs = []
+    var eventTimes = []
+    var today = new Date();
+    var nextBool = false;
+    var nextIndex = -1;
+    var eventDateArr = []
+    //fetch .ics file and convert it to string, and split lines into an array
+    const fetchedPage = await fetch(calendarURL)
+    calendarAsString = await fetchedPage.text()
+    //console.log(calendarAsString)
+    calSubs = calendarAsString.split('\n')
+
+    //check for start times and add the times to dateArr as a Date()
+    //also add event names to eventTimes array which contains start times and event names as strings
+    for (let i = 0; i < calSubs.length; i++) {
+        if (calSubs[i].includes('DTSTART;')) {
+            var eventYear = calSubs[i].substring(27, 31)
+            var eventMonth = calSubs[i].substring(31, 33) - 1
+            var eventDay = calSubs[i].substring(33, 35)
+            var eventHour = calSubs[i].substring(36, 38) //- 5
+            var eventMinute = calSubs[i].substring(38, 40)
+            eventDateArr.push(new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1, eventMinute)))
+            eventTimes.push(calSubs[i].substring(27))
+            eventTimes.push(calSubs[i + 2].substring(8))
+        }
+    }
+
+    //check which event is next by comapring Date objects and use that index to get it into the message
+    while (!nextBool) {
+        nextIndex++
+        if (eventDateArr[nextIndex] > today) {
+            nextBool = true
+        }
+    }
+    var finalOutString = "**Schedule for upcoming race weekend:**\n"
+    var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+    var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
+
+    // gets whole weekend 
+    if (nextEventName.indexOf('Practice 1') >= 0) {
+        // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
+        for (let i = 0; i < 5; i++) {
+            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+        }
+    }
+    else {
+        while (nextEventName.indexOf('Practice 1') < 0){
+            nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
+            nextIndex--
+        }
+        for (let i = 1; i < 6; i++) {
+            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            // console.log(nextEventName)
+            // console.log(nextEventTime)
+            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+        }
+        //console.log(nextEventName.indexOf('Practice 1'))
+    }
+
+
+
+    // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
+    message.reply({
+        content: finalOutString
     })
 }
 
@@ -316,7 +390,7 @@ async function newDriverCommand(message) {
             }
         }
         if (outString.includes('mw-parser-output')) {
-            finalOutString = await altStats(message, item)
+            finalOutString = await altStats(item)
         }
         finalOutString += ''
         //set profileURL to wikipedia article of driver
@@ -327,7 +401,7 @@ async function newDriverCommand(message) {
         // get link to image on right side of article
         var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
         var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
-        
+
         // get flag icon
         var flagiconIndex = statString.indexOf('flagicon')
         //console.log(flagiconIndex)
@@ -337,7 +411,7 @@ async function newDriverCommand(message) {
                 statString.indexOf('src', flagiconIndex) + 6,
                 statString.indexOf('decoding', flagiconIndex) - 3
             )
-            console.log(thumbURL)
+            //console.log(thumbURL)
         }
 
 
@@ -346,7 +420,7 @@ async function newDriverCommand(message) {
         // senna -> brazilians -> get flag from brazilians article
         // some real stupid shit
         else {
-            console.log('getting from nationality article')
+            //console.log('getting from nationality article')
             var natArticle = statString.substring(
                 statString.indexOf('a href', statString.indexOf('Nationality')) + 15,
                 statString.indexOf('title', statString.indexOf('Nationality')) - 3
@@ -358,8 +432,8 @@ async function newDriverCommand(message) {
             const pageData = await fetchedPage.json()
             var statString = JSON.stringify(pageData)
             var flagURL = 'https:' + statString.substring(
-                statString.indexOf('src',statString.indexOf('img alt=\\\"Flag'))+6,
-                statString.indexOf('decoding',statString.indexOf('img alt=\\\"Flag'))-3
+                statString.indexOf('src', statString.indexOf('img alt=\\\"Flag')) + 6,
+                statString.indexOf('decoding', statString.indexOf('img alt=\\\"Flag')) - 3
             )
             //console.log(flagURL)
             thumbURL = flagURL
@@ -367,22 +441,32 @@ async function newDriverCommand(message) {
         //console.log('thumbURL = ' + thumbURL)
 
         //create embed and reply
+
         const driverEmbed = new EmbedBuilder()
             .setColor([255, 24, 1])
             .setTitle(driverInfoArray[1])
-            .setThumbnail(thumbURL)
             .setURL(item.url)
-            .setImage(imageURL)
             .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
+
+
+        ///////////////////////////////////////////////////
+        //      fix
+        ////////
+        if (!thumbURL.includes("{") && !imageURL.includes("{")){
+            driverEmbed
+            .setThumbnail(thumbURL)
+            .setImage(imageURL)
+        }
+        
         await message.reply({
             embeds: [driverEmbed],
         })
     }
     //alternate method to get stats if driver not in 2020-2022 grid
-    async function altStats(message, item) {
+    async function altStats(item) {
         //console.log("using alternate method to get stats...")
         var outString = ''
-        var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+        //var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
         var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
         for (let i = 0; i < altStatArr.length; i++) {
             //console.log(statStringsArr[i])
@@ -450,7 +534,7 @@ async function newDriverCommand(message) {
     }
 }
 
-
+// superceded by newQualiCommand
 async function qualiCommand(message) {
     var rounds = new Map([]);
     var icsAsString = ''
@@ -842,7 +926,7 @@ async function standingsCommand(message) {
 client.on("messageCreate", message => {
     if (message.author.bot == false) {
         if (message.content.toLowerCase().includes(botPrefix + 'n') && message.content.toLowerCase().indexOf(botPrefix + 'n') == 0) {
-            nextCommand(message)
+            newNextCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'driver') &&
             message.content.toLowerCase().indexOf(botPrefix + 'driver') == 0
