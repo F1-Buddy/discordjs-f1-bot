@@ -1,17 +1,23 @@
 # F1 Buddy [F1 Bot]
 
+## Created By ::
+[@jubuyer](https://github.com/jubuyer) && [@rakib-shahid](https://github.com/rakib-shahid)
+
+## Deployment
+Made for Discord, hosted on Heroku
+
 ### To-Do
 - [ ] Migrate Typescript build of F1 Buddy to strictly Javascript
     * [x] Add settings file to import/change prefix character
     * [x] Add command checks to ensure they are valid (fix things like "$n$driver 1")
     * [x] Add pics
-    * [?] Add discord emojis to commands
+    * [ ] Add discord emojis to commands
 
 ### Previous To-Do List
 - [x] Fix string error when calling next event
 - [x] Add date objects for next event
 - [x] Remove local calendar (use [*this*](https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics))
 - [x] Fix stat fetch
-- [ ] Add documentation
-- [ ] Fetch F1 data from ergast API
-- [ ] Fix change prefix command (catch invalid prefixes)
+- [x] Add documentation
+- [x] Fetch F1 data from ergast API
+- [x] Fix change prefix command (catch invalid prefixes)
