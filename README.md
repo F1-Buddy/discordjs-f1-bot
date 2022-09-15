@@ -6,6 +6,7 @@
     * [x] Add command checks to ensure they are valid (fix things like "$n$driver 1")
     * [x] Add pics
     * [?] Add discord emojis to commands
+- [ ] Calling quali command >1 times breaks the bot
 
 ### Previous To-Do List
 - [x] Fix string error when calling next event

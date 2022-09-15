@@ -7,7 +7,12 @@ import DiscordJS, { ButtonStyle } from "discord.js"
 //import { ButtonInteraction } from "discord.js"
 //const { MessageActionRow, MessageButton } = import('discord.js')
 
-
+/////////////////////////////
+//  main branch embed color
+var embedColor = [255, 24, 1]
+//  dev-rakib embed color
+embedColor = [0, 247, 255]
+//////////////////////////////
 
 import fetch from "node-fetch"
 import dotenv from 'dotenv'
@@ -112,6 +117,10 @@ async function newNextCommand(message) {
             var eventDay = calSubs[i].substring(33, 35)
             var eventHour = calSubs[i].substring(36, 38) //- 5
             var eventMinute = calSubs[i].substring(38, 40)
+
+            //////////////////////////////////////////////////////////////
+            //  figure out timezone
+            //////////////////////////////////////////////////////////////
             eventDateArr.push(new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1, eventMinute)))
             eventTimes.push(calSubs[i].substring(27))
             eventTimes.push(calSubs[i + 2].substring(8))
@@ -133,20 +142,20 @@ async function newNextCommand(message) {
     if (nextEventName.indexOf('Practice 1') >= 0) {
         // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
         for (let i = 0; i < 5; i++) {
-            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
-            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
             finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
         }
     }
     else {
-        while (nextEventName.indexOf('Practice 1') < 0){
+        while (nextEventName.indexOf('Practice 1') < 0) {
             nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
             nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
             nextIndex--
         }
         for (let i = 1; i < 6; i++) {
-            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
-            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
             // console.log(nextEventName)
             // console.log(nextEventTime)
             finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
@@ -158,7 +167,7 @@ async function newNextCommand(message) {
 
     // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
     message.reply({
-        content: finalOutString
+        content: "dev-rakib:\n" + finalOutString
     })
 }
 
@@ -211,7 +220,7 @@ async function resultsCommand(message) {
 
 
     const resultsEmbed = new EmbedBuilder()
-        .setColor([255, 24, 1])
+        .setColor(embedColor)
         .setTitle(title)
         .setURL('https://www.formula1.com/en/results.html')
         // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
@@ -322,7 +331,7 @@ async function driverCommand(message) {
                     var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
                     // create embed
                     const resultsEmbed = new EmbedBuilder()
-                        .setColor([255, 24, 1])
+                        .setColor(embedColor)
                         .setTitle(driverName)
                         .setURL(driverProfile)
                         //.setThumbnail(imageURL)
@@ -383,7 +392,8 @@ async function newDriverCommand(message) {
             const pageData = await fetchedPage.json()
             var statString = JSON.stringify(pageData.parse.text)
             //add stats to final string to be returned
-            outString = statString.substring((statString.indexOf('<p>') + 3), (statString.indexOf('n') - 1))
+            var f1CareerIndex = 'Formula One</a> World Championship career'
+            outString = statString.substring((statString.indexOf('<p>', statString.indexOf(f1CareerIndex)) + 3), (statString.indexOf('n', statString.indexOf(f1CareerIndex)) - 1))
             //console.log(outString)
             if (!outString.includes('mw-parser-output')) {
                 finalOutString += statStringsArr[i * 2] + '**' + outString + '**' + statStringsArr[i * 2 + 1] + '\n'
@@ -393,25 +403,44 @@ async function newDriverCommand(message) {
             finalOutString = await altStats(item)
         }
         finalOutString += ''
+
         //set profileURL to wikipedia article of driver
         var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
         const fetchedPage = await fetch(profileURL)
         const pageData = await fetchedPage.json()
-        var statString = JSON.stringify(pageData)
+
+        var statString = JSON.stringify(pageData.parse.text)
+
+        //  checks to see if wikipedia article has been migrated, gets newest link if it has been
+        //  for ex: Alexander_Albon -> Alex_Albon
+        if (statString.toLowerCase().includes('redirectmsg')) {
+            // console.log("title= index\n" + statString.indexOf('title='))
+
+            profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page='
+                + statString.substring(statString.indexOf('wiki/') + 5, statString.indexOf('title=') - 3)
+                + '&contentmodel=wikitext&format=json'
+            const fetchedPage = await fetch(profileURL)
+            const pageData = await fetchedPage.json()
+
+            var statString = JSON.stringify(pageData.parse.text)
+            // console.log('profileURL edited\n' + profileURL)
+        }
+
         // get link to image on right side of article
         var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
         var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
+        // console.log(imageURL)
 
         // get flag icon
         var flagiconIndex = statString.indexOf('flagicon')
-        //console.log(flagiconIndex)
+
         //checks to see if flagicon is at top of page, sometimes drivers like senna have no flagicon but have hidden UK flagicon at bottom
         if (flagiconIndex < 20000) {
             var thumbURL = 'https:' + statString.substring(
                 statString.indexOf('src', flagiconIndex) + 6,
                 statString.indexOf('decoding', flagiconIndex) - 3
             )
-            //console.log(thumbURL)
+            // console.log('thumbURL = '+thumbURL)
         }
 
 
@@ -435,29 +464,32 @@ async function newDriverCommand(message) {
                 statString.indexOf('src', statString.indexOf('img alt=\\\"Flag')) + 6,
                 statString.indexOf('decoding', statString.indexOf('img alt=\\\"Flag')) - 3
             )
-            //console.log(flagURL)
+            // console.log('got from nationality article:\n' + flagURL)
             thumbURL = flagURL
         }
         //console.log('thumbURL = ' + thumbURL)
 
         //create embed and reply
-
         const driverEmbed = new EmbedBuilder()
-            .setColor([255, 24, 1])
+            .setColor(embedColor)
             .setTitle(driverInfoArray[1])
             .setURL(item.url)
             .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
 
+        driverEmbed
+            .setThumbnail(thumbURL)
+            .setImage(imageURL)
 
         ///////////////////////////////////////////////////
         //      fix
+        //      potentially fixed?!?!?
         ////////
-        if (!thumbURL.includes("{") && !imageURL.includes("{")){
-            driverEmbed
-            .setThumbnail(thumbURL)
-            .setImage(imageURL)
-        }
-        
+        // if (!thumbURL.includes("{") && !imageURL.includes("{")) {
+        //     driverEmbed
+        //         .setThumbnail(thumbURL)
+        //         .setImage(imageURL)
+        // }
+
         await message.reply({
             embeds: [driverEmbed],
         })
@@ -473,7 +505,7 @@ async function newDriverCommand(message) {
             const fetchedPage = await fetch(profileURL)
             const pageData = await fetchedPage.text()
             //console.log(altStatArr[i])
-            var searchIndex = pageData.indexOf(altStatArr[i])
+            var searchIndex = pageData.indexOf(altStatArr[i], pageData.indexOf("Formula One</a> World Championship career"))
             var currentStatString = pageData.substring(pageData.indexOf('data\\\">', searchIndex) + 7, pageData.indexOf('</td>', searchIndex))
             //console.log(currentStatString)
             if (!currentStatString.includes('/a')) {
@@ -665,7 +697,7 @@ async function newQualiCommand(message) {
                 finalOutString += '\n'
                 // create embed
                 var qualiEmbed = new EmbedBuilder()
-                    .setColor([255, 24, 1])
+                    .setColor(embedColor)
                     .setTitle('Quali Results for ' + raceName)
                     //.setURL(item.url)
                     //.setImage(imageURL)
@@ -743,7 +775,7 @@ async function newQualiCommand(message) {
                                 })
                             }
                             //console.log('last button clicked')
-                            await interaction.update({})
+                            await interaction.update({fetchReply: true})
                         }
                         else if (interaction.customId == 'nextButton') {
                             if (qualiEmbed.data.fields[0].name.includes('Q3')) {
@@ -797,7 +829,7 @@ async function newQualiCommand(message) {
                                 })
                             }
 
-                            await interaction.update({})
+                            await interaction.update({fetchReply: true})
                         }
 
                         //interaction.deferReply()
