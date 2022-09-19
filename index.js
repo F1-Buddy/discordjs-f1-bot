@@ -923,128 +923,128 @@ async function qualiCommand2(message) {
 
 
                 // fix this part
-                client.on('interactionCreate', async (interaction) => {
-                    console.log(interaction.toString())
-                    if (interaction.isButton) {
-                        if (interaction.customId == 'lastButton') {
-                            if (qualiEmbed.data.fields[0].name.includes('Q1')) {
-                                finalOutString = '\n'
-                                for (let i = 0; i < qualiArray.length; i++) {
-                                    if (((Number)(qualiArray[i].position)) > 10) {
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var constructorName = qualiArray[i].Constructor.name
-                                        var q2Time = qualiArray[i].Q2
-                                        if (q2Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
-                                        }
-                                        else if (((Number)(qualiArray[i].position)) < 16) {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                                        }
-                                    }
+                // client.on('interactionCreate', async (interaction) => {
+                //     console.log(interaction.toString())
+                //     if (interaction.isButton) {
+                //         if (interaction.customId == 'lastButton') {
+                //             if (qualiEmbed.data.fields[0].name.includes('Q1')) {
+                //                 finalOutString = '\n'
+                //                 for (let i = 0; i < qualiArray.length; i++) {
+                //                     if (((Number)(qualiArray[i].position)) > 10) {
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var constructorName = qualiArray[i].Constructor.name
+                //                         var q2Time = qualiArray[i].Q2
+                //                         if (q2Time != undefined) {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                //                         }
+                //                         else if (((Number)(qualiArray[i].position)) < 16) {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                //                         }
+                //                     }
 
-                                }
-                                qualiEmbed.setTitle('Q2 Results for ' + raceName)
-                                qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-                                // await messageReply.edit({
-                                //     embeds: [qualiEmbed],
-                                //     fetchReply: true
-                                // })
-                            }
-                            else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
-                                finalOutString = '\n'
-                                for (let i = 0; i < qualiArray.length; i++) {
-                                    if (((Number)(qualiArray[i].position)) < 11) {
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var constructorName = qualiArray[i].Constructor.name
-                                        var q3Time = qualiArray[i].Q3
-                                        if (q3Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
-                                        }
-                                        else {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                                        }
-                                    }
+                //                 }
+                //                 qualiEmbed.setTitle('Q2 Results for ' + raceName)
+                //                 qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+                //                 // await messageReply.edit({
+                //                 //     embeds: [qualiEmbed],
+                //                 //     fetchReply: true
+                //                 // })
+                //             }
+                //             else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+                //                 finalOutString = '\n'
+                //                 for (let i = 0; i < qualiArray.length; i++) {
+                //                     if (((Number)(qualiArray[i].position)) < 11) {
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var constructorName = qualiArray[i].Constructor.name
+                //                         var q3Time = qualiArray[i].Q3
+                //                         if (q3Time != undefined) {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                //                         }
+                //                         else {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                //                         }
+                //                     }
 
-                                }
-                                qualiEmbed.setTitle('Q3 Results for ' + raceName)
-                                qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
-                                // await messageReply.edit({
-                                //     embeds: [qualiEmbed],
-                                //     fetchReply: true
-                                // })
-                            }
-                            //console.log('last button clicked')
-                            // await interaction.update({fetchReply: true})
-                        }
-                        else if (interaction.customId == 'nextButton') {
-                            if (qualiEmbed.data.fields[0].name.includes('Q3')) {
-                                finalOutString = '\n'
-                                for (let i = 0; i < qualiArray.length; i++) {
-                                    if (((Number)(qualiArray[i].position)) > 10) {
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var constructorName = qualiArray[i].Constructor.name
-                                        var q2Time = qualiArray[i].Q2
-                                        if (q2Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
-                                        }
-                                        else if (((Number)(qualiArray[i].position)) < 16) {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                                        }
-                                    }
+                //                 }
+                //                 qualiEmbed.setTitle('Q3 Results for ' + raceName)
+                //                 qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
+                //                 // await messageReply.edit({
+                //                 //     embeds: [qualiEmbed],
+                //                 //     fetchReply: true
+                //                 // })
+                //             }
+                //             //console.log('last button clicked')
+                //             // await interaction.update({fetchReply: true})
+                //         }
+                //         else if (interaction.customId == 'nextButton') {
+                //             if (qualiEmbed.data.fields[0].name.includes('Q3')) {
+                //                 finalOutString = '\n'
+                //                 for (let i = 0; i < qualiArray.length; i++) {
+                //                     if (((Number)(qualiArray[i].position)) > 10) {
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var constructorName = qualiArray[i].Constructor.name
+                //                         var q2Time = qualiArray[i].Q2
+                //                         if (q2Time != undefined) {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                //                         }
+                //                         else if (((Number)(qualiArray[i].position)) < 16) {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                //                         }
+                //                     }
 
-                                }
-                                qualiEmbed.setTitle('Q2 Results for ' + raceName)
-                                qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-                                // await messageReply.edit({
-                                //     embeds: [qualiEmbed],
-                                //     fetchReply: true
-                                // })
-                            }
-                            else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
-                                finalOutString = '\n'
-                                for (let i = 0; i < qualiArray.length; i++) {
-                                    if (((Number)(qualiArray[i].position)) > 15) {
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var positionString = '**P' + qualiArray[i].position + '**'
-                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                                        var constructorName = qualiArray[i].Constructor.name
-                                        var q1Time = qualiArray[i].Q1
-                                        if (q1Time != undefined) {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
-                                        }
-                                        else {
-                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                                        }
-                                    }
+                //                 }
+                //                 qualiEmbed.setTitle('Q2 Results for ' + raceName)
+                //                 qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+                //                 // await messageReply.edit({
+                //                 //     embeds: [qualiEmbed],
+                //                 //     fetchReply: true
+                //                 // })
+                //             }
+                //             else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+                //                 finalOutString = '\n'
+                //                 for (let i = 0; i < qualiArray.length; i++) {
+                //                     if (((Number)(qualiArray[i].position)) > 15) {
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var positionString = '**P' + qualiArray[i].position + '**'
+                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                //                         var constructorName = qualiArray[i].Constructor.name
+                //                         var q1Time = qualiArray[i].Q1
+                //                         if (q1Time != undefined) {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
+                //                         }
+                //                         else {
+                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                //                         }
+                //                     }
 
-                                }
-                                qualiEmbed.setTitle('Q1 Results for ' + raceName)
-                                qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
-                                // await messageReply.edit({
-                                //     embeds: [qualiEmbed],
-                                //     fetchReply: true
-                                // })
-                            }
+                //                 }
+                //                 qualiEmbed.setTitle('Q1 Results for ' + raceName)
+                //                 qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
+                //                 // await messageReply.edit({
+                //                 //     embeds: [qualiEmbed],
+                //                 //     fetchReply: true
+                //                 // })
+                //             }
 
-                            // await interaction.update({fetchReply: true})
-                        }
+                //             // await interaction.update({fetchReply: true})
+                //         }
 
-                        //interaction.deferReply()
-                        interaction.update({
-                            embeds: [qualiEmbed]
-                        })
-                    }
-                })
+                //         //interaction.deferReply()
+                //         interaction.update({
+                //             embeds: [qualiEmbed]
+                //         })
+                //     }
+                // })
             }
 
         }
@@ -1053,8 +1053,138 @@ async function qualiCommand2(message) {
         invalidInput()
     }
 }
-client.on('interactionCreate', async (interaction) => {
+async function backPage() {
+    // if (interaction.customId == 'lastButton') {
+    if (qualiEmbed.data.fields[0].name.includes('Q1')) {
+        finalOutString = '\n'
+        for (let i = 0; i < qualiArray.length; i++) {
+            if (((Number)(qualiArray[i].position)) > 10) {
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var constructorName = qualiArray[i].Constructor.name
+                var q2Time = qualiArray[i].Q2
+                if (q2Time != undefined) {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                }
+                else if (((Number)(qualiArray[i].position)) < 16) {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                }
+            }
 
+        }
+        qualiEmbed.setTitle('Q2 Results for ' + raceName)
+        qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+        // await messageReply.edit({
+        //     embeds: [qualiEmbed],
+        //     fetchReply: true
+        // })
+    }
+    else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+        finalOutString = '\n'
+        for (let i = 0; i < qualiArray.length; i++) {
+            if (((Number)(qualiArray[i].position)) < 11) {
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var constructorName = qualiArray[i].Constructor.name
+                var q3Time = qualiArray[i].Q3
+                if (q3Time != undefined) {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                }
+                else {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                }
+            }
+
+        }
+        qualiEmbed.setTitle('Q3 Results for ' + raceName)
+        qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
+    }
+    interaction.update({
+        embeds: [qualiEmbed]
+    })
+}
+async function nextPage() {
+
+    if (qualiEmbed.data.fields[0].name.includes('Q3')) {
+        finalOutString = '\n'
+        for (let i = 0; i < qualiArray.length; i++) {
+            if (((Number)(qualiArray[i].position)) > 10) {
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var constructorName = qualiArray[i].Constructor.name
+                var q2Time = qualiArray[i].Q2
+                if (q2Time != undefined) {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                }
+                else if (((Number)(qualiArray[i].position)) < 16) {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                }
+            }
+
+        }
+        qualiEmbed.setTitle('Q2 Results for ' + raceName)
+        qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+        // await messageReply.edit({
+        //     embeds: [qualiEmbed],
+        //     fetchReply: true
+        // })
+    }
+    else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+        finalOutString = '\n'
+        for (let i = 0; i < qualiArray.length; i++) {
+            if (((Number)(qualiArray[i].position)) > 15) {
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var positionString = '**P' + qualiArray[i].position + '**'
+                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                var constructorName = qualiArray[i].Constructor.name
+                var q1Time = qualiArray[i].Q1
+                if (q1Time != undefined) {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
+                }
+                else {
+                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                }
+            }
+
+        }
+        qualiEmbed.setTitle('Q1 Results for ' + raceName)
+        qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
+        // await messageReply.edit({
+        //     embeds: [qualiEmbed],
+        //     fetchReply: true
+        // })
+    }
+    interaction.update({
+        embeds: [qualiEmbed]
+    })
+    // await interaction.update({fetchReply: true})
+
+}
+client.on('interactionCreate', async (interaction) => {
+    if (interaction.isButton) {
+        if (interaction.customId == 'lastButton') {
+            try {
+                await backPage()
+            } catch (error) {
+                console.log('error running backPage')
+            }
+        }
+        else if (interaction.customId == 'nextButton') {
+            try {
+                await nextPage()
+            } catch (error) {
+                console.log('error running nextPage')
+            }
+        }
+    }
+    
 })
 
 function changeCommand(message) {
@@ -1185,6 +1315,7 @@ client.on("messageCreate", message => {
             }
             //qualiCommand(message)
             newQualiCommand(message)
+            // qualiCommand2(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'results') &&
             message.content.toLowerCase().indexOf(botPrefix + 'results') == 0
