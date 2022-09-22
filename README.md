@@ -1,7 +1,9 @@
 # F1 Buddy [F1 Bot]
 
 ### To-Do
-- [ ] Migrate Typescript build of F1 Buddy to strictly Javascript
+- [ ] Comment out line 7 before merging to main
+
+- [x] Migrate Typescript build of F1 Buddy to strictly Javascript
     * [x] Add settings file to import/change prefix character
     * [x] Add command checks to ensure they are valid (fix things like "$n$driver 1")
     * [x] Add pics
@@ -10,8 +12,8 @@
 
 ### Quali command is currently broken in this branch
 
-- [ ] Calling quali command >1 times breaks the bot
-- [ ] Clean up quali command & refactor into new methods
+- [x] Calling quali command >1 times breaks the bot
+- [x] Clean up quali command & refactor into new methods
 
 Possible solution
 
