@@ -1,11 +1,4 @@
-// import DiscordJS, { ClientVoiceManager, IntentsBitField, time } from 'discord.js'
-//const DiscordJS = require("discord.js")
-
 import DiscordJS, { ButtonStyle } from "discord.js"
-//import paginationEmbed from "discordjs-button-pagination"
-//import { MessageActionRow, ButtonInteraction } from "discord.js"
-//import { ButtonInteraction } from "discord.js"
-//const { MessageActionRow, MessageButton } = import('discord.js')
 
 /////////////////////////////
 //  main branch embed color
@@ -35,9 +28,7 @@ dotenv.config()
 
 
 client.on('ready', () => {
-    // const channel = client.channels.cache.get('1013448201522655283');
     console.log(`${client.user.tag}  logged in`);
-    // console.log('Bot ready')
 })
 
 //get settings from settings.txt
@@ -92,7 +83,7 @@ async function nextCommand(message) {
         content: 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``'
     })
 }
-
+// Currently used next command
 async function newNextCommand(message) {
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
     var calendarAsString = ''
@@ -171,6 +162,7 @@ async function newNextCommand(message) {
     })
 }
 
+// Currently used results command
 async function resultsCommand(message) {
     var finalOutString = ''
     // var requestOptions = {
@@ -365,7 +357,7 @@ async function driverCommand(message) {
         invalidDNumInput()
     }
 }
-
+// Currently used driver command
 async function newDriverCommand(message) {
     function invalidDriverInput() {
         message.reply({
@@ -650,7 +642,7 @@ async function qualiCommand(message) {
     }
 
 }
-
+//  superceded by qualiCommand2
 async function newQualiCommand(message) {
 
     var messageContent = message.content
@@ -723,7 +715,7 @@ async function newQualiCommand(message) {
                 })
 
                 client.on('interactionCreate', async (interaction) => {
-                    console.log(interaction.toString())
+                    // console.log(interaction.toString())
                     if (interaction.isButton) {
                         if (interaction.customId == 'lastButton') {
                             if (qualiEmbed.data.fields[0].name.includes('Q1')) {
@@ -855,7 +847,32 @@ async function newQualiCommand(message) {
     }
 }
 
+
+// Currently used quali command
+///////////////////////////////////////////////
+//
+//  these variables are needed for quali 2.0
+//
+////////////////////////////////////////////
+var qualiEmbedQ3 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Q3 Results', value: "TEMP" })
+
+var qualiEmbedQ2 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Knocked out in Q2', value: "TEMP" })
+
+var qualiEmbedQ1 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Knocked out in Q1', value: "TEMP" })
+var pageCounter = 0;
+
+
 async function qualiCommand2(message) {
+    pageCounter = 0;
     var messageContent = message.content
     function invalidInput(message) {
         message.reply({
@@ -877,7 +894,10 @@ async function qualiCommand2(message) {
                 var qualiArray = pageData.MRData.RaceTable.Races[0].QualifyingResults
                 var raceName = pageData.MRData.RaceTable.Races[0].raceName
 
-                var finalOutString = '\n'
+                var finalOutString3 = '\n'
+                var finalOutString2 = '\n'
+                var finalOutString1 = '\n'
+
                 for (let i = 0; i < qualiArray.length; i++) {
                     var positionString = '**P' + qualiArray[i].position + '**'
                     var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
@@ -886,25 +906,57 @@ async function qualiCommand2(message) {
                     var q2Time = qualiArray[i].Q2
                     var q3Time = qualiArray[i].Q3
                     if (q3Time != undefined) {
-                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                        finalOutString3 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
                     }
                     else if (((Number)(qualiArray[i].position)) < 11) {
-                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                        finalOutString3 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                    }
+                    else {
+                        if (q2Time != undefined) {
+                            finalOutString2 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                        }
+                        else if (((Number)(qualiArray[i].position)) < 16) {
+                            finalOutString2 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                        }
+                        else {
+                            if (q1Time != undefined) {
+                                finalOutString1 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
+                            }
+                            else {
+                                finalOutString1 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                            }
+                        }
                     }
                 }
-                finalOutString += '\n'
+                finalOutString3 += '\n'
+                finalOutString2 += '\n'
+                finalOutString1 += '\n'
 
                 // create embed
-                var qualiEmbed = new EmbedBuilder()
+                qualiEmbedQ3 = new EmbedBuilder()
                     .setColor(embedColor)
                     .setTitle('Quali Results for ' + raceName)
                     //.setURL(item.url)
                     //.setImage(imageURL)
-                    .addFields({ name: 'Q3 Results', value: finalOutString })
+                    .addFields({ name: 'Q3 Results', value: finalOutString3 })
+
+                qualiEmbedQ2 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Knocked out in Q2', value: finalOutString2 })
+
+                qualiEmbedQ1 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Knocked out in Q1', value: finalOutString1 })
 
                 //reply with embed
                 const messageReply = await message.reply({
-                    embeds: [qualiEmbed],
+                    embeds: [qualiEmbedQ3],
                     //content: 'testing reactions',
                     components: [
                         new ActionRowBuilder().setComponents(
@@ -919,130 +971,93 @@ async function qualiCommand2(message) {
                         )
                     ],
                 })
-
-
-
-                // fix this part
                 // client.on('interactionCreate', async (interaction) => {
-                //     console.log(interaction.toString())
                 //     if (interaction.isButton) {
+                //         // console.log("page counter = " + pageCounter)
                 //         if (interaction.customId == 'lastButton') {
-                //             if (qualiEmbed.data.fields[0].name.includes('Q1')) {
-                //                 finalOutString = '\n'
-                //                 for (let i = 0; i < qualiArray.length; i++) {
-                //                     if (((Number)(qualiArray[i].position)) > 10) {
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var constructorName = qualiArray[i].Constructor.name
-                //                         var q2Time = qualiArray[i].Q2
-                //                         if (q2Time != undefined) {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
-                //                         }
-                //                         else if (((Number)(qualiArray[i].position)) < 16) {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                //                         }
-                //                     }
-
-                //                 }
-                //                 qualiEmbed.setTitle('Q2 Results for ' + raceName)
-                //                 qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-                //                 // await messageReply.edit({
-                //                 //     embeds: [qualiEmbed],
-                //                 //     fetchReply: true
-                //                 // })
+                //             // console.log('back button pressed')
+                //             if (pageCounter == 2) {
+                //                 pageCounter--
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ2],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
                 //             }
-                //             else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
-                //                 finalOutString = '\n'
-                //                 for (let i = 0; i < qualiArray.length; i++) {
-                //                     if (((Number)(qualiArray[i].position)) < 11) {
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var constructorName = qualiArray[i].Constructor.name
-                //                         var q3Time = qualiArray[i].Q3
-                //                         if (q3Time != undefined) {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
-                //                         }
-                //                         else {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                //                         }
-                //                     }
-
-                //                 }
-                //                 qualiEmbed.setTitle('Q3 Results for ' + raceName)
-                //                 qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
-                //                 // await messageReply.edit({
-                //                 //     embeds: [qualiEmbed],
-                //                 //     fetchReply: true
-                //                 // })
+                //             else if (pageCounter == 1) {
+                //                 pageCounter--
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ3],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
                 //             }
-                //             //console.log('last button clicked')
-                //             // await interaction.update({fetchReply: true})
+                //             // else {
+                //             //     interaction.update({fetchReply: true})
+                //             // }
                 //         }
                 //         else if (interaction.customId == 'nextButton') {
-                //             if (qualiEmbed.data.fields[0].name.includes('Q3')) {
-                //                 finalOutString = '\n'
-                //                 for (let i = 0; i < qualiArray.length; i++) {
-                //                     if (((Number)(qualiArray[i].position)) > 10) {
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var constructorName = qualiArray[i].Constructor.name
-                //                         var q2Time = qualiArray[i].Q2
-                //                         if (q2Time != undefined) {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
-                //                         }
-                //                         else if (((Number)(qualiArray[i].position)) < 16) {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                //                         }
-                //                     }
-
-                //                 }
-                //                 qualiEmbed.setTitle('Q2 Results for ' + raceName)
-                //                 qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-                //                 // await messageReply.edit({
-                //                 //     embeds: [qualiEmbed],
-                //                 //     fetchReply: true
-                //                 // })
+                //             // console.log('next button pressed')
+                //             if (pageCounter == 0) {
+                //                 pageCounter++
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ2],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
                 //             }
-                //             else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
-                //                 finalOutString = '\n'
-                //                 for (let i = 0; i < qualiArray.length; i++) {
-                //                     if (((Number)(qualiArray[i].position)) > 15) {
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var positionString = '**P' + qualiArray[i].position + '**'
-                //                         var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                //                         var constructorName = qualiArray[i].Constructor.name
-                //                         var q1Time = qualiArray[i].Q1
-                //                         if (q1Time != undefined) {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
-                //                         }
-                //                         else {
-                //                             finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                //                         }
-                //                     }
-
-                //                 }
-                //                 qualiEmbed.setTitle('Q1 Results for ' + raceName)
-                //                 qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
-                //                 // await messageReply.edit({
-                //                 //     embeds: [qualiEmbed],
-                //                 //     fetchReply: true
-                //                 // })
+                //             else if (pageCounter == 1) {
+                //                 pageCounter++
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ1],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
                 //             }
-
-                //             // await interaction.update({fetchReply: true})
+                //             // else {
+                //             //     interaction.update({fetchReply: true})
+                //             // }
                 //         }
-
-                //         //interaction.deferReply()
-                //         interaction.update({
-                //             embeds: [qualiEmbed]
-                //         })
                 //     }
                 // })
             }
@@ -1053,139 +1068,98 @@ async function qualiCommand2(message) {
         invalidInput()
     }
 }
-async function backPage() {
-    // if (interaction.customId == 'lastButton') {
-    if (qualiEmbed.data.fields[0].name.includes('Q1')) {
-        finalOutString = '\n'
-        for (let i = 0; i < qualiArray.length; i++) {
-            if (((Number)(qualiArray[i].position)) > 10) {
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var constructorName = qualiArray[i].Constructor.name
-                var q2Time = qualiArray[i].Q2
-                if (q2Time != undefined) {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
-                }
-                else if (((Number)(qualiArray[i].position)) < 16) {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                }
-            }
 
-        }
-        qualiEmbed.setTitle('Q2 Results for ' + raceName)
-        qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-        // await messageReply.edit({
-        //     embeds: [qualiEmbed],
-        //     fetchReply: true
-        // })
-    }
-    else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
-        finalOutString = '\n'
-        for (let i = 0; i < qualiArray.length; i++) {
-            if (((Number)(qualiArray[i].position)) < 11) {
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var constructorName = qualiArray[i].Constructor.name
-                var q3Time = qualiArray[i].Q3
-                if (q3Time != undefined) {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
-                }
-                else {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                }
-            }
-
-        }
-        qualiEmbed.setTitle('Q3 Results for ' + raceName)
-        qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
-    }
-    interaction.update({
-        embeds: [qualiEmbed]
-    })
-}
-async function nextPage() {
-
-    if (qualiEmbed.data.fields[0].name.includes('Q3')) {
-        finalOutString = '\n'
-        for (let i = 0; i < qualiArray.length; i++) {
-            if (((Number)(qualiArray[i].position)) > 10) {
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var constructorName = qualiArray[i].Constructor.name
-                var q2Time = qualiArray[i].Q2
-                if (q2Time != undefined) {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
-                }
-                else if (((Number)(qualiArray[i].position)) < 16) {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                }
-            }
-
-        }
-        qualiEmbed.setTitle('Q2 Results for ' + raceName)
-        qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-        // await messageReply.edit({
-        //     embeds: [qualiEmbed],
-        //     fetchReply: true
-        // })
-    }
-    else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
-        finalOutString = '\n'
-        for (let i = 0; i < qualiArray.length; i++) {
-            if (((Number)(qualiArray[i].position)) > 15) {
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var positionString = '**P' + qualiArray[i].position + '**'
-                var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
-                var constructorName = qualiArray[i].Constructor.name
-                var q1Time = qualiArray[i].Q1
-                if (q1Time != undefined) {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
-                }
-                else {
-                    finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
-                }
-            }
-
-        }
-        qualiEmbed.setTitle('Q1 Results for ' + raceName)
-        qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
-        // await messageReply.edit({
-        //     embeds: [qualiEmbed],
-        //     fetchReply: true
-        // })
-    }
-    interaction.update({
-        embeds: [qualiEmbed]
-    })
-    // await interaction.update({fetchReply: true})
-
-}
+// Check interaction and update quali embed accordingly
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton) {
+        // console.log("page counter = " + pageCounter)
         if (interaction.customId == 'lastButton') {
-            try {
-                await backPage()
-            } catch (error) {
-                console.log('error running backPage')
+            // console.log('back button pressed')
+            if (pageCounter == 2) {
+                pageCounter--
+                interaction.update({
+                    embeds: [qualiEmbedQ2],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else if (pageCounter == 1) {
+                pageCounter--
+                interaction.update({
+                    embeds: [qualiEmbedQ3],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else {
+                interaction.update({fetchReply: true})
             }
         }
         else if (interaction.customId == 'nextButton') {
-            try {
-                await nextPage()
-            } catch (error) {
-                console.log('error running nextPage')
+            // console.log('next button pressed')
+            if (pageCounter == 0) {
+                pageCounter++
+                interaction.update({
+                    embeds: [qualiEmbedQ2],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else if (pageCounter == 1) {
+                pageCounter++
+                interaction.update({
+                    embeds: [qualiEmbedQ1],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else {
+                interaction.update({fetchReply: true})
             }
         }
     }
-    
 })
+
 
 function changeCommand(message) {
     function invalidChangeInput() {
@@ -1212,6 +1186,8 @@ function changeCommand(message) {
         invalidChangeInput();
     }
 }
+
+// Currently used standings command
 async function standingsCommand(message) {
     var today = new Date()
     var year = today.getFullYear().toString()
@@ -1314,8 +1290,8 @@ client.on("messageCreate", message => {
                 message.reply("Add a round number at the end! \"" + botPrefix + "quali 14\" for example")
             }
             //qualiCommand(message)
-            newQualiCommand(message)
-            // qualiCommand2(message)
+            // newQualiCommand(message)
+            qualiCommand2(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'results') &&
             message.content.toLowerCase().indexOf(botPrefix + 'results') == 0
@@ -1343,13 +1319,6 @@ client.on("messageCreate", message => {
         }
     }
 
-})
-client.on("messageCreate", message => {
-    if (message.author == 403699636612890624) {
-        message.reply({
-            content: "stfu bruh"
-        })
-    }
 })
 
 client.login(process.env.TOKEN)

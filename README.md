@@ -13,6 +13,10 @@
 - [ ] Calling quali command >1 times breaks the bot
 - [ ] Clean up quali command & refactor into new methods
 
+Possible solution
+
+- [x] Create 3 embeds at quali call, swap between with buttons
+
 
 ### Previous To-Do List
 - [x] Fix string error when calling next event
