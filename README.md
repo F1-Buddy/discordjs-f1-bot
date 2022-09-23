@@ -3,6 +3,8 @@
 ### To-Do
 - [ ] Comment out line 7 before merging to main
 
+- [ ] Figure out timezones for next command
+
 - [x] Migrate Typescript build of F1 Buddy to strictly Javascript
     * [x] Add settings file to import/change prefix character
     * [x] Add command checks to ensure they are valid (fix things like "$n$driver 1")

@@ -112,7 +112,12 @@ async function newNextCommand(message) {
             //////////////////////////////////////////////////////////////
             //  figure out timezone
             //////////////////////////////////////////////////////////////
-            eventDateArr.push(new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1, eventMinute)))
+            var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute)
+            // tried to convert to local
+            var newDate = new Date(oldDate.getTime() - oldDate.getTimezoneOffset()*60*1000);
+            // console.log("oldDate = "+oldDate)
+            // console.log("newDate = "+newDate)
+            eventDateArr.push(newDate)
             eventTimes.push(calSubs[i].substring(27))
             eventTimes.push(calSubs[i + 2].substring(8))
         }
