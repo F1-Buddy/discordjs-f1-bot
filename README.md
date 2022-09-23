@@ -1,7 +1,7 @@
 # F1 Buddy [F1 Bot]
 
 ### To-Do
-- [ ] Comment out line 7 before merging to main
+- [ ] Comment out line 7 and fix 168 before merging to main
 
 - [ ] Figure out timezones for next command
 
