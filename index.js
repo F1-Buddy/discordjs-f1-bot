@@ -112,8 +112,10 @@ async function newNextCommand(message) {
             //////////////////////////////////////////////////////////////
             //  figure out timezone
             //////////////////////////////////////////////////////////////
+            // old method of converting
+            // var oldDate = new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute))
             var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute)
-            // tried to convert to local
+            // tried to convert to localz
             var newDate = new Date(oldDate.getTime() - oldDate.getTimezoneOffset()*60*1000);
             // console.log("oldDate = "+oldDate)
             // console.log("newDate = "+newDate)
