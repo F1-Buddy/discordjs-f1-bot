@@ -1,13 +1,11 @@
-// import DiscordJS, { ClientVoiceManager, IntentsBitField, time } from 'discord.js'
-//const DiscordJS = require("discord.js")
-
 import DiscordJS, { ButtonStyle } from "discord.js"
-//import paginationEmbed from "discordjs-button-pagination"
-//import { MessageActionRow, ButtonInteraction } from "discord.js"
-//import { ButtonInteraction } from "discord.js"
-//const { MessageActionRow, MessageButton } = import('discord.js')
 
-
+/////////////////////////////
+//  main branch embed color
+var embedColor = [255, 24, 1]
+//  dev-rakib embed color
+//  embedColor = [0, 247, 255]
+//////////////////////////////
 
 import fetch from "node-fetch"
 import dotenv from 'dotenv'
@@ -30,9 +28,7 @@ dotenv.config()
 
 
 client.on('ready', () => {
-    // const channel = client.channels.cache.get('1013448201522655283');
     console.log(`${client.user.tag}  logged in`);
-    // console.log('Bot ready')
 })
 
 //get settings from settings.txt
@@ -87,7 +83,7 @@ async function nextCommand(message) {
         content: 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``'
     })
 }
-
+// Currently used next command
 async function newNextCommand(message) {
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
     var calendarAsString = ''
@@ -112,7 +108,18 @@ async function newNextCommand(message) {
             var eventDay = calSubs[i].substring(33, 35)
             var eventHour = calSubs[i].substring(36, 38) //- 5
             var eventMinute = calSubs[i].substring(38, 40)
-            eventDateArr.push(new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1, eventMinute)))
+
+            //////////////////////////////////////////////////////////////
+            //  figure out timezone
+            //////////////////////////////////////////////////////////////
+            // old method of converting
+            // var oldDate = new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute))
+            var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute)
+            // tried to convert to localz
+            var newDate = new Date(oldDate.getTime() - oldDate.getTimezoneOffset()*60*1000);
+            // console.log("oldDate = "+oldDate)
+            // console.log("newDate = "+newDate)
+            eventDateArr.push(newDate)
             eventTimes.push(calSubs[i].substring(27))
             eventTimes.push(calSubs[i + 2].substring(8))
         }
@@ -133,20 +140,20 @@ async function newNextCommand(message) {
     if (nextEventName.indexOf('Practice 1') >= 0) {
         // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
         for (let i = 0; i < 5; i++) {
-            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
-            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
             finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
         }
     }
     else {
-        while (nextEventName.indexOf('Practice 1') < 0){
+        while (nextEventName.indexOf('Practice 1') < 0) {
             nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
             nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
             nextIndex--
         }
         for (let i = 1; i < 6; i++) {
-            nextEventName = eventTimes[(nextIndex+i) * 2 + 1].substring(0, eventTimes[(nextIndex+i) * 2 + 1].length - 1);
-            nextEventTime = eventDateArr[(nextIndex+i)].toLocaleString()
+            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
             // console.log(nextEventName)
             // console.log(nextEventTime)
             finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
@@ -158,10 +165,13 @@ async function newNextCommand(message) {
 
     // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
     message.reply({
-        content: finalOutString
+        content: 
+        // "dev-rakib:\n" + 
+        finalOutString
     })
 }
 
+// Currently used results command
 async function resultsCommand(message) {
     var finalOutString = ''
     // var requestOptions = {
@@ -211,7 +221,7 @@ async function resultsCommand(message) {
 
 
     const resultsEmbed = new EmbedBuilder()
-        .setColor([255, 24, 1])
+        .setColor(embedColor)
         .setTitle(title)
         .setURL('https://www.formula1.com/en/results.html')
         // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
@@ -322,7 +332,7 @@ async function driverCommand(message) {
                     var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
                     // create embed
                     const resultsEmbed = new EmbedBuilder()
-                        .setColor([255, 24, 1])
+                        .setColor(embedColor)
                         .setTitle(driverName)
                         .setURL(driverProfile)
                         //.setThumbnail(imageURL)
@@ -356,7 +366,7 @@ async function driverCommand(message) {
         invalidDNumInput()
     }
 }
-
+// Currently used driver command
 async function newDriverCommand(message) {
     function invalidDriverInput() {
         message.reply({
@@ -383,7 +393,8 @@ async function newDriverCommand(message) {
             const pageData = await fetchedPage.json()
             var statString = JSON.stringify(pageData.parse.text)
             //add stats to final string to be returned
-            outString = statString.substring((statString.indexOf('<p>') + 3), (statString.indexOf('n') - 1))
+            var f1CareerIndex = statString.indexOf('Formula One</a> World Championship career')
+            outString = statString.substring((statString.indexOf('<p>', f1CareerIndex) + 3), (statString.indexOf('n', f1CareerIndex) - 1))
             //console.log(outString)
             if (!outString.includes('mw-parser-output')) {
                 finalOutString += statStringsArr[i * 2] + '**' + outString + '**' + statStringsArr[i * 2 + 1] + '\n'
@@ -393,25 +404,44 @@ async function newDriverCommand(message) {
             finalOutString = await altStats(item)
         }
         finalOutString += ''
+
         //set profileURL to wikipedia article of driver
         var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
         const fetchedPage = await fetch(profileURL)
         const pageData = await fetchedPage.json()
-        var statString = JSON.stringify(pageData)
+
+        var statString = JSON.stringify(pageData.parse.text)
+
+        //  checks to see if wikipedia article has been migrated, gets newest link if it has been
+        //  for ex: Alexander_Albon -> Alex_Albon
+        if (statString.toLowerCase().includes('redirectmsg')) {
+            // console.log("title= index\n" + statString.indexOf('title='))
+
+            profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page='
+                + statString.substring(statString.indexOf('wiki/') + 5, statString.indexOf('title=') - 3)
+                + '&contentmodel=wikitext&format=json'
+            const fetchedPage = await fetch(profileURL)
+            const pageData = await fetchedPage.json()
+
+            var statString = JSON.stringify(pageData.parse.text)
+            // console.log('profileURL edited\n' + profileURL)
+        }
+
         // get link to image on right side of article
         var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
         var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
+        // console.log(imageURL)
 
         // get flag icon
         var flagiconIndex = statString.indexOf('flagicon')
-        //console.log(flagiconIndex)
+
         //checks to see if flagicon is at top of page, sometimes drivers like senna have no flagicon but have hidden UK flagicon at bottom
         if (flagiconIndex < 20000) {
             var thumbURL = 'https:' + statString.substring(
                 statString.indexOf('src', flagiconIndex) + 6,
                 statString.indexOf('decoding', flagiconIndex) - 3
             )
-            //console.log(thumbURL)
+            // console.log('thumbURL = '+thumbURL)
         }
 
 
@@ -435,29 +465,32 @@ async function newDriverCommand(message) {
                 statString.indexOf('src', statString.indexOf('img alt=\\\"Flag')) + 6,
                 statString.indexOf('decoding', statString.indexOf('img alt=\\\"Flag')) - 3
             )
-            //console.log(flagURL)
+            // console.log('got from nationality article:\n' + flagURL)
             thumbURL = flagURL
         }
         //console.log('thumbURL = ' + thumbURL)
 
         //create embed and reply
-
         const driverEmbed = new EmbedBuilder()
-            .setColor([255, 24, 1])
+            .setColor(embedColor)
             .setTitle(driverInfoArray[1])
             .setURL(item.url)
             .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
 
+        driverEmbed
+            .setThumbnail(thumbURL)
+            .setImage(imageURL)
 
         ///////////////////////////////////////////////////
         //      fix
+        //      potentially fixed?!?!?
         ////////
-        if (!thumbURL.includes("{") && !imageURL.includes("{")){
-            driverEmbed
-            .setThumbnail(thumbURL)
-            .setImage(imageURL)
-        }
-        
+        // if (!thumbURL.includes("{") && !imageURL.includes("{")) {
+        //     driverEmbed
+        //         .setThumbnail(thumbURL)
+        //         .setImage(imageURL)
+        // }
+
         await message.reply({
             embeds: [driverEmbed],
         })
@@ -473,7 +506,7 @@ async function newDriverCommand(message) {
             const fetchedPage = await fetch(profileURL)
             const pageData = await fetchedPage.text()
             //console.log(altStatArr[i])
-            var searchIndex = pageData.indexOf(altStatArr[i])
+            var searchIndex = pageData.indexOf(altStatArr[i], pageData.indexOf("Formula One</a> World Championship career"))
             var currentStatString = pageData.substring(pageData.indexOf('data\\\">', searchIndex) + 7, pageData.indexOf('</td>', searchIndex))
             //console.log(currentStatString)
             if (!currentStatString.includes('/a')) {
@@ -618,7 +651,7 @@ async function qualiCommand(message) {
     }
 
 }
-
+//  superceded by qualiCommand2
 async function newQualiCommand(message) {
 
     var messageContent = message.content
@@ -665,7 +698,7 @@ async function newQualiCommand(message) {
                 finalOutString += '\n'
                 // create embed
                 var qualiEmbed = new EmbedBuilder()
-                    .setColor([255, 24, 1])
+                    .setColor(embedColor)
                     .setTitle('Quali Results for ' + raceName)
                     //.setURL(item.url)
                     //.setImage(imageURL)
@@ -689,7 +722,9 @@ async function newQualiCommand(message) {
                         )
                     ],
                 })
+
                 client.on('interactionCreate', async (interaction) => {
+                    // console.log(interaction.toString())
                     if (interaction.isButton) {
                         if (interaction.customId == 'lastButton') {
                             if (qualiEmbed.data.fields[0].name.includes('Q1')) {
@@ -713,9 +748,10 @@ async function newQualiCommand(message) {
                                 }
                                 qualiEmbed.setTitle('Q2 Results for ' + raceName)
                                 qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-                                await messageReply.edit({
-                                    embeds: [qualiEmbed]
-                                })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
                             }
                             else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
                                 finalOutString = '\n'
@@ -738,12 +774,13 @@ async function newQualiCommand(message) {
                                 }
                                 qualiEmbed.setTitle('Q3 Results for ' + raceName)
                                 qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
-                                await messageReply.edit({
-                                    embeds: [qualiEmbed]
-                                })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
                             }
                             //console.log('last button clicked')
-                            await interaction.update({})
+                            // await interaction.update({fetchReply: true})
                         }
                         else if (interaction.customId == 'nextButton') {
                             if (qualiEmbed.data.fields[0].name.includes('Q3')) {
@@ -767,9 +804,10 @@ async function newQualiCommand(message) {
                                 }
                                 qualiEmbed.setTitle('Q2 Results for ' + raceName)
                                 qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
-                                await messageReply.edit({
-                                    embeds: [qualiEmbed]
-                                })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
                             }
                             else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
                                 finalOutString = '\n'
@@ -792,15 +830,19 @@ async function newQualiCommand(message) {
                                 }
                                 qualiEmbed.setTitle('Q1 Results for ' + raceName)
                                 qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
-                                await messageReply.edit({
-                                    embeds: [qualiEmbed]
-                                })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
                             }
 
-                            await interaction.update({})
+                            // await interaction.update({fetchReply: true})
                         }
 
                         //interaction.deferReply()
+                        interaction.update({
+                            embeds: [qualiEmbed]
+                        })
                     }
                 })
             }
@@ -813,6 +855,320 @@ async function newQualiCommand(message) {
         }
     }
 }
+
+
+// Currently used quali command
+///////////////////////////////////////////////
+//
+//  these variables are needed for quali 2.0
+//
+////////////////////////////////////////////
+var qualiEmbedQ3 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Q3 Results', value: "TEMP" })
+
+var qualiEmbedQ2 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Knocked out in Q2', value: "TEMP" })
+
+var qualiEmbedQ1 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Knocked out in Q1', value: "TEMP" })
+var pageCounter = 0;
+
+
+async function qualiCommand2(message) {
+    pageCounter = 0;
+    var messageContent = message.content
+    function invalidInput(message) {
+        message.reply({
+            content: 'Invalid Input'
+        })
+    }
+    if (messageContent.length > 7) {
+        var roundNumber = (Number)(messageContent.substring(messageContent.indexOf('quali ') + 6))
+        //console.log('round number = ' + roundNumber)
+        if (roundNumber != NaN) {
+            // set url
+            var roundURL = 'https://ergast.com/api/f1/2022/'
+            roundURL += roundNumber + '/qualifying.json'
+            // fetch data
+            const fetchedPage = await fetch(roundURL);
+            const pageData = await fetchedPage.json();
+
+            if (pageData.MRData.RaceTable.Races.length > 0) {
+                var qualiArray = pageData.MRData.RaceTable.Races[0].QualifyingResults
+                var raceName = pageData.MRData.RaceTable.Races[0].raceName
+
+                var finalOutString3 = '\n'
+                var finalOutString2 = '\n'
+                var finalOutString1 = '\n'
+
+                for (let i = 0; i < qualiArray.length; i++) {
+                    var positionString = '**P' + qualiArray[i].position + '**'
+                    var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                    var constructorName = qualiArray[i].Constructor.name
+                    var q1Time = qualiArray[i].Q1
+                    var q2Time = qualiArray[i].Q2
+                    var q3Time = qualiArray[i].Q3
+                    if (q3Time != undefined) {
+                        finalOutString3 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                    }
+                    else if (((Number)(qualiArray[i].position)) < 11) {
+                        finalOutString3 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                    }
+                    else {
+                        if (q2Time != undefined) {
+                            finalOutString2 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                        }
+                        else if (((Number)(qualiArray[i].position)) < 16) {
+                            finalOutString2 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                        }
+                        else {
+                            if (q1Time != undefined) {
+                                finalOutString1 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
+                            }
+                            else {
+                                finalOutString1 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                            }
+                        }
+                    }
+                }
+                finalOutString3 += '\n'
+                finalOutString2 += '\n'
+                finalOutString1 += '\n'
+
+                // create embed
+                qualiEmbedQ3 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Q3 Results', value: finalOutString3 })
+
+                qualiEmbedQ2 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Knocked out in Q2', value: finalOutString2 })
+
+                qualiEmbedQ1 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Knocked out in Q1', value: finalOutString1 })
+
+                //reply with embed
+                const messageReply = await message.reply({
+                    embeds: [qualiEmbedQ3],
+                    //content: 'testing reactions',
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+                // client.on('interactionCreate', async (interaction) => {
+                //     if (interaction.isButton) {
+                //         // console.log("page counter = " + pageCounter)
+                //         if (interaction.customId == 'lastButton') {
+                //             // console.log('back button pressed')
+                //             if (pageCounter == 2) {
+                //                 pageCounter--
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ2],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             else if (pageCounter == 1) {
+                //                 pageCounter--
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ3],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             // else {
+                //             //     interaction.update({fetchReply: true})
+                //             // }
+                //         }
+                //         else if (interaction.customId == 'nextButton') {
+                //             // console.log('next button pressed')
+                //             if (pageCounter == 0) {
+                //                 pageCounter++
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ2],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             else if (pageCounter == 1) {
+                //                 pageCounter++
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ1],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             // else {
+                //             //     interaction.update({fetchReply: true})
+                //             // }
+                //         }
+                //     }
+                // })
+            }
+
+        }
+    }
+    else {
+        invalidInput()
+    }
+}
+
+// Check interaction and update quali embed accordingly
+client.on('interactionCreate', async (interaction) => {
+    if (interaction.isButton) {
+        // console.log("page counter = " + pageCounter)
+        if (interaction.customId == 'lastButton') {
+            // console.log('back button pressed')
+            if (pageCounter == 2) {
+                pageCounter--
+                interaction.update({
+                    embeds: [qualiEmbedQ2],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else if (pageCounter == 1) {
+                pageCounter--
+                interaction.update({
+                    embeds: [qualiEmbedQ3],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else {
+                interaction.update({fetchReply: true})
+            }
+        }
+        else if (interaction.customId == 'nextButton') {
+            // console.log('next button pressed')
+            if (pageCounter == 0) {
+                pageCounter++
+                interaction.update({
+                    embeds: [qualiEmbedQ2],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else if (pageCounter == 1) {
+                pageCounter++
+                interaction.update({
+                    embeds: [qualiEmbedQ1],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else {
+                interaction.update({fetchReply: true})
+            }
+        }
+    }
+})
+
 
 function changeCommand(message) {
     function invalidChangeInput() {
@@ -839,6 +1195,8 @@ function changeCommand(message) {
         invalidChangeInput();
     }
 }
+
+// Currently used standings command
 async function standingsCommand(message) {
     var today = new Date()
     var year = today.getFullYear().toString()
@@ -941,7 +1299,8 @@ client.on("messageCreate", message => {
                 message.reply("Add a round number at the end! \"" + botPrefix + "quali 14\" for example")
             }
             //qualiCommand(message)
-            newQualiCommand(message)
+            // newQualiCommand(message)
+            qualiCommand2(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'results') &&
             message.content.toLowerCase().indexOf(botPrefix + 'results') == 0
