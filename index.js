@@ -114,12 +114,12 @@ async function newNextCommand(message) {
             //////////////////////////////////////////////////////////////
             // old method of converting
             // var oldDate = new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute))
-            var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute)
+            var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 5 , eventMinute)
             // tried to convert to localz
-            var newDate = new Date(oldDate.getTime() - oldDate.getTimezoneOffset()*60*1000);
+            // var newDate = new Date(oldDate.getTime() - oldDate.getTimezoneOffset()*60*1000);
             // console.log("oldDate = "+oldDate)
             // console.log("newDate = "+newDate)
-            eventDateArr.push(newDate)
+            eventDateArr.push(oldDate)
             eventTimes.push(calSubs[i].substring(27))
             eventTimes.push(calSubs[i + 2].substring(8))
         }
@@ -132,7 +132,7 @@ async function newNextCommand(message) {
             nextBool = true
         }
     }
-    var finalOutString = "**Schedule for upcoming race weekend:**\n"
+    var finalOutString = "**Schedule for upcoming race weekend** (EST) **:**\n"
     var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
     var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
 
@@ -1290,7 +1290,14 @@ client.on("messageCreate", message => {
             message.content.toLowerCase().indexOf(botPrefix + 'driver') == 0
         ) {
             //driverCommand(message)
-            newDriverCommand(message)
+            if (message.content.toLowerCase().includes(botPrefix + 'driver') && message.content.length <= 8) {
+                message.reply({
+                    content: 'Please enter a valid driver number or name: $driver 33 / $driver hamilton / $driver max_verstappen'
+                })
+            }
+            else {
+                newDriverCommand(message)
+            }
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'quali') &&
             message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
