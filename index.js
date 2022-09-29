@@ -4,7 +4,7 @@ import DiscordJS, { ButtonStyle } from "discord.js"
 //  main branch embed color
 var embedColor = [255, 24, 1]
 //  dev-rakib embed color
-embedColor = [0, 247, 255]
+//  embedColor = [0, 247, 255]
 //////////////////////////////
 
 import fetch from "node-fetch"
@@ -165,7 +165,9 @@ async function newNextCommand(message) {
 
     // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
     message.reply({
-        content: "dev-rakib:\n" + finalOutString
+        content: 
+        // "dev-rakib:\n" + 
+        finalOutString
     })
 }
 

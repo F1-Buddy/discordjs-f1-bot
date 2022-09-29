@@ -5,7 +5,7 @@
   "description": "- [ ] Migrate Typescript build of F1 Buddy to strictly Javascript",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start" : "node index.js"
   },
   "repository": {
     "type": "git",

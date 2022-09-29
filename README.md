@@ -1,5 +1,11 @@
 # F1 Buddy [F1 Bot]
 
+## Created By ::
+[@jubuyer](https://github.com/jubuyer) && [@rakib-shahid](https://github.com/rakib-shahid)
+
+## Deployment
+Made for Discord, hosted on Heroku
+
 ### To-Do
 - [ ] Comment out line 7 and fix 168 before merging to main
 
@@ -9,7 +15,7 @@
     * [x] Add settings file to import/change prefix character
     * [x] Add command checks to ensure they are valid (fix things like "$n$driver 1")
     * [x] Add pics
-    * [?] Add discord emojis to commands
+    * [ ] Add discord emojis to commands
 
 
 ### Quali command is currently broken in this branch
@@ -27,6 +33,6 @@ Possible solution
 - [x] Add date objects for next event
 - [x] Remove local calendar (use [*this*](https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics))
 - [x] Fix stat fetch
-- [ ] Add documentation
+- [x] Add documentation
 - [x] Fetch F1 data from ergast API
-- [ ] Fix change prefix command (catch invalid prefixes)
+- [x] Fix change prefix command (catch invalid prefixes)
