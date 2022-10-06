@@ -1,12 +1,16 @@
-// import DiscordJS, { ClientVoiceManager, IntentsBitField, time } from 'discord.js'
-//const DiscordJS = require("discord.js")
-import DiscordJS from "discord.js"
+import DiscordJS, { ButtonStyle } from "discord.js"
+
+/////////////////////////////
+//  main branch embed color
+var embedColor = [255, 24, 1]
+//  dev-rakib embed color
+//  embedColor = [0, 247, 255]
+//////////////////////////////
 
 import fetch from "node-fetch"
 import dotenv from 'dotenv'
 import fs from 'fs'
-
-import { EmbedBuilder } from 'discord.js'
+import { ButtonBuilder, ActionRowBuilder, EmbedBuilder } from 'discord.js'
 
 
 const client = new DiscordJS.Client(
@@ -24,9 +28,7 @@ dotenv.config()
 
 
 client.on('ready', () => {
-    // const channel = client.channels.cache.get('1013448201522655283');
     console.log(`${client.user.tag}  logged in`);
-    // console.log('Bot ready')
 })
 
 //get settings from settings.txt
@@ -36,7 +38,7 @@ settingsArr = settingsString.split('\n')
 settingsString = ''
 var botPrefix = '' + settingsArr[0].substring(5, 6)
 
-
+// superceded by newNextCommand
 async function nextCommand(message) {
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
     var calendarAsString = ''
@@ -81,14 +83,102 @@ async function nextCommand(message) {
         content: 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``'
     })
 }
+// Currently used next command
+async function newNextCommand(message) {
+    var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
+    var calendarAsString = ''
+    var calSubs = []
+    var eventTimes = []
+    var today = new Date();
+    var nextBool = false;
+    var nextIndex = -1;
+    var eventDateArr = []
+    //fetch .ics file and convert it to string, and split lines into an array
+    const fetchedPage = await fetch(calendarURL)
+    calendarAsString = await fetchedPage.text()
+    //console.log(calendarAsString)
+    calSubs = calendarAsString.split('\n')
 
+    //check for start times and add the times to dateArr as a Date()
+    //also add event names to eventTimes array which contains start times and event names as strings
+    for (let i = 0; i < calSubs.length; i++) {
+        if (calSubs[i].includes('DTSTART;')) {
+            var eventYear = calSubs[i].substring(27, 31)
+            var eventMonth = calSubs[i].substring(31, 33) - 1
+            var eventDay = calSubs[i].substring(33, 35)
+            var eventHour = calSubs[i].substring(36, 38) //- 5
+            var eventMinute = calSubs[i].substring(38, 40)
+
+            //////////////////////////////////////////////////////////////
+            //  figure out timezone
+            //////////////////////////////////////////////////////////////
+            // old method of converting
+            // var oldDate = new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute))
+            var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 5 , eventMinute)
+            // tried to convert to localz
+            // var newDate = new Date(oldDate.getTime() - oldDate.getTimezoneOffset()*60*1000);
+            // console.log("oldDate = "+oldDate)
+            // console.log("newDate = "+newDate)
+            eventDateArr.push(oldDate)
+            eventTimes.push(calSubs[i].substring(27))
+            eventTimes.push(calSubs[i + 2].substring(8))
+        }
+    }
+
+    //check which event is next by comapring Date objects and use that index to get it into the message
+    while (!nextBool) {
+        nextIndex++
+        if (eventDateArr[nextIndex] > today) {
+            nextBool = true
+        }
+    }
+    var finalOutString = "**Schedule for upcoming race weekend** (EST) **:**\n"
+    var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+    var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
+
+    // gets whole weekend 
+    if (nextEventName.indexOf('Practice 1') >= 0) {
+        // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
+        for (let i = 0; i < 5; i++) {
+            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
+            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+        }
+    }
+    else {
+        while (nextEventName.indexOf('Practice 1') < 0) {
+            nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
+            nextIndex--
+        }
+        for (let i = 1; i < 6; i++) {
+            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
+            // console.log(nextEventName)
+            // console.log(nextEventTime)
+            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+        }
+        //console.log(nextEventName.indexOf('Practice 1'))
+    }
+
+
+
+    // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
+    message.reply({
+        content: 
+        // "dev-rakib:\n" + 
+        finalOutString
+    })
+}
+
+// Currently used results command
 async function resultsCommand(message) {
     var finalOutString = ''
     // var requestOptions = {
     //     method: 'GET',
     //     redirect: 'follow'
     //   };
-      
+
     //   fetch("http://ergast.com/api/f1/current/last/results.json", requestOptions)
     //     .then(response => response.text())
     //     .then(result => console.log(result))
@@ -96,7 +186,7 @@ async function resultsCommand(message) {
     var dataURL = "http://ergast.com/api/f1/current/last/results.json"
     const fetchedPage = await fetch(dataURL)
     const pageData = await fetchedPage.json();
-    
+
     // console.log(fetchedPage)
 
     var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
@@ -104,7 +194,7 @@ async function resultsCommand(message) {
     title += pageData.MRData.RaceTable.Races[0].Circuit.circuitName + ' '
     title += pageData.MRData.RaceTable.Races[0].season + '\n'
 
-    
+
     //console.log(finalOutString)
     finalOutString += "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
     if (pageData.MRData.RaceTable.Races.length != 0) {
@@ -114,24 +204,24 @@ async function resultsCommand(message) {
             var driverNameString = pageData.MRData.RaceTable.Races[0].Results[i].Driver.givenName + ' ' +
                 pageData.MRData.RaceTable.Races[0].Results[i].Driver.familyName
             var finishingStatus = ''
-            if(pageData.MRData.RaceTable.Races[0].Results[i].Time != null) {
+            if (pageData.MRData.RaceTable.Races[0].Results[i].Time != null) {
                 finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].Time.time
             } else {
                 finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].status
             }
 
-            finalOutString += "\t"+positionString + "\t\t\t" + driverNameString + "\t\t\t"
+            finalOutString += "\t" + positionString + "\t\t\t" + driverNameString + "\t\t\t"
             finalOutString += finishingStatus + '```'
 
 
 
-            }
-            
         }
-    
+
+    }
+
 
     const resultsEmbed = new EmbedBuilder()
-        .setColor([255, 24, 1])
+        .setColor(embedColor)
         .setTitle(title)
         .setURL('https://www.formula1.com/en/results.html')
         // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
@@ -148,12 +238,12 @@ async function resultsCommand(message) {
 
         // .setImage('https://i.imgur.com/AfFp7pu.png')
         .setTimestamp()
-        // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+    // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
     message.reply({ embeds: [resultsEmbed] });
 }
 
-
+// superceded by newDriverCommand
 async function driverCommand(message) {
     function invalidDNumInput() {
         message.reply({
@@ -196,10 +286,10 @@ async function driverCommand(message) {
 
         //get driver num from user
         driverNumber = (Number)(message.content.substring(8))
-        if (drivers.get(driverNumber) != undefined){
+        if (drivers.get(driverNumber) != undefined) {
             var driverProfile = 'https://en.wikipedia.org/wiki/' + drivers.get(driverNumber)[2]
         }
-        
+
 
         if (Number.isFinite(driverNumber)) {
             if (drivers.get(driverNumber) == undefined) {
@@ -229,20 +319,20 @@ async function driverCommand(message) {
                         var statString = JSON.stringify(pageData.parse.text)
                         //add stats to final string to be returned
                         outString = statString.substring((statString.indexOf('<p>') + 3), (statString.indexOf('n') - 1))
-                        finalOutString += statStringsArr[i * 2] + '**' +outString + '**' +statStringsArr[i * 2 + 1] + '\n'
+                        finalOutString += statStringsArr[i * 2] + '**' + outString + '**' + statStringsArr[i * 2 + 1] + '\n'
                     }
                     finalOutString += ''
                     //set profileURL to wikipedia article of driver
-                    var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page='+drivers.get(driverNumber)[2]+'&contentmodel=wikitext&format=json'
+                    var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + drivers.get(driverNumber)[2] + '&contentmodel=wikitext&format=json'
                     const fetchedPage = await fetch(profileURL)
                     const pageData = await fetchedPage.json()
                     var statString = JSON.stringify(pageData)
                     // get link to image on right side of article
-                    var indexOfImage = statString.indexOf('src',(statString.indexOf('infobox-image')))
-                    var imageURL = 'https:'+statString.substring(indexOfImage+6,  (statString.indexOf('decoding',indexOfImage) - 3))
+                    var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
+                    var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
                     // create embed
                     const resultsEmbed = new EmbedBuilder()
-                        .setColor([255, 24, 1])
+                        .setColor(embedColor)
                         .setTitle(driverName)
                         .setURL(driverProfile)
                         //.setThumbnail(imageURL)
@@ -256,8 +346,8 @@ async function driverCommand(message) {
                         // 	{ name: 'Inline field title', value: 'Some value here', inline: true },
                         // )
                         .addFields({ name: driverName + '\'s Stats:\n', value: finalOutString })
-                        //
-                        //.setTimestamp()
+                    //
+                    //.setTimestamp()
                     // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
 
                     // message.reply({ embeds: [resultsEmbed] });
@@ -276,7 +366,208 @@ async function driverCommand(message) {
         invalidDNumInput()
     }
 }
+// Currently used driver command
+async function newDriverCommand(message) {
+    function invalidDriverInput() {
+        message.reply({
+            content: 'Please enter a valid driver number or name: $driver 33 / $driver hamilton / $driver max_verstappen'
+        })
+    }
+    //get stats and reply with them
+    async function replyStats(message, item) {
+        var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+        var statURL = ''
+        var finalOutString = ''
+        var outString = ''
+        var fetchArr = []
+        for (let i = 0; i < statArr.length; i++) {
+            statURL = ''
+            statURL += 'https://en.wikipedia.org/w/api.php?action=parse&text={{F1stat|'
+            statURL += item.code + '|' + statArr[i] + '}}&contentmodel=wikitext&format=json'
+            //console.log(statURL)
 
+            //push urls for statistics to an array
+            fetchArr.push(statURL)
+            //fetch each url
+            const fetchedPage = await fetch(fetchArr[i])
+            const pageData = await fetchedPage.json()
+            var statString = JSON.stringify(pageData.parse.text)
+            //add stats to final string to be returned
+            var f1CareerIndex = statString.indexOf('Formula One</a> World Championship career')
+            outString = statString.substring((statString.indexOf('<p>', f1CareerIndex) + 3), (statString.indexOf('n', f1CareerIndex) - 1))
+            //console.log(outString)
+            if (!outString.includes('mw-parser-output')) {
+                finalOutString += statStringsArr[i * 2] + '**' + outString + '**' + statStringsArr[i * 2 + 1] + '\n'
+            }
+        }
+        if (outString.includes('mw-parser-output')) {
+            finalOutString = await altStats(item)
+        }
+        finalOutString += ''
+
+        //set profileURL to wikipedia article of driver
+        var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
+        const fetchedPage = await fetch(profileURL)
+        const pageData = await fetchedPage.json()
+
+        var statString = JSON.stringify(pageData.parse.text)
+
+        //  checks to see if wikipedia article has been migrated, gets newest link if it has been
+        //  for ex: Alexander_Albon -> Alex_Albon
+        if (statString.toLowerCase().includes('redirectmsg')) {
+            // console.log("title= index\n" + statString.indexOf('title='))
+
+            profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page='
+                + statString.substring(statString.indexOf('wiki/') + 5, statString.indexOf('title=') - 3)
+                + '&contentmodel=wikitext&format=json'
+            const fetchedPage = await fetch(profileURL)
+            const pageData = await fetchedPage.json()
+
+            var statString = JSON.stringify(pageData.parse.text)
+            // console.log('profileURL edited\n' + profileURL)
+        }
+
+        // get link to image on right side of article
+        var indexOfImage = statString.indexOf('src', (statString.indexOf('infobox-image')))
+        var imageURL = 'https:' + statString.substring(indexOfImage + 6, (statString.indexOf('decoding', indexOfImage) - 3))
+        // console.log(imageURL)
+
+        // get flag icon
+        var flagiconIndex = statString.indexOf('flagicon')
+
+        //checks to see if flagicon is at top of page, sometimes drivers like senna have no flagicon but have hidden UK flagicon at bottom
+        if (flagiconIndex < 20000) {
+            var thumbURL = 'https:' + statString.substring(
+                statString.indexOf('src', flagiconIndex) + 6,
+                statString.indexOf('decoding', flagiconIndex) - 3
+            )
+            // console.log('thumbURL = '+thumbURL)
+        }
+
+
+        // this is dumb as shit
+        // if flag isn't on driver's article, goes to article about to drivers nationality, gets flag image from there
+        // senna -> brazilians -> get flag from brazilians article
+        // some real stupid shit
+        else {
+            //console.log('getting from nationality article')
+            var natArticle = statString.substring(
+                statString.indexOf('a href', statString.indexOf('Nationality')) + 15,
+                statString.indexOf('title', statString.indexOf('Nationality')) - 3
+            )
+            var nationalityURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + natArticle
+                + '&contentmodel=wikitext&format=json';
+            //console.log(nationalityURL)
+            const fetchedPage = await fetch(nationalityURL)
+            const pageData = await fetchedPage.json()
+            var statString = JSON.stringify(pageData)
+            var flagURL = 'https:' + statString.substring(
+                statString.indexOf('src', statString.indexOf('img alt=\\\"Flag')) + 6,
+                statString.indexOf('decoding', statString.indexOf('img alt=\\\"Flag')) - 3
+            )
+            // console.log('got from nationality article:\n' + flagURL)
+            thumbURL = flagURL
+        }
+        //console.log('thumbURL = ' + thumbURL)
+
+        //create embed and reply
+        const driverEmbed = new EmbedBuilder()
+            .setColor(embedColor)
+            .setTitle(driverInfoArray[1])
+            .setURL(item.url)
+            .addFields({ name: driverInfoArray[1] + '\'s Stats:\n', value: finalOutString })
+
+        driverEmbed
+            .setThumbnail(thumbURL)
+            .setImage(imageURL)
+
+        ///////////////////////////////////////////////////
+        //      fix
+        //      potentially fixed?!?!?
+        ////////
+        // if (!thumbURL.includes("{") && !imageURL.includes("{")) {
+        //     driverEmbed
+        //         .setThumbnail(thumbURL)
+        //         .setImage(imageURL)
+        // }
+
+        await message.reply({
+            embeds: [driverEmbed],
+        })
+    }
+    //alternate method to get stats if driver not in 2020-2022 grid
+    async function altStats(item) {
+        //console.log("using alternate method to get stats...")
+        var outString = ''
+        //var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+        var profileURL = 'https://en.wikipedia.org/w/api.php?action=parse&page=' + item.url.substring(item.url.indexOf('wiki/') + 5) + '&contentmodel=wikitext&format=json'
+        for (let i = 0; i < altStatArr.length; i++) {
+            //console.log(statStringsArr[i])
+            const fetchedPage = await fetch(profileURL)
+            const pageData = await fetchedPage.text()
+            //console.log(altStatArr[i])
+            var searchIndex = pageData.indexOf(altStatArr[i], pageData.indexOf("Formula One</a> World Championship career"))
+            var currentStatString = pageData.substring(pageData.indexOf('data\\\">', searchIndex) + 7, pageData.indexOf('</td>', searchIndex))
+            //console.log(currentStatString)
+            if (!currentStatString.includes('/a')) {
+                outString += altStatArr[i] + ': ' + currentStatString + '\n'
+            }
+            else {
+                if (currentStatString.indexOf('<') == 0) {
+                    outString += altStatArr[i] + ': ' + currentStatString.substring(currentStatString.indexOf('\\\">') + 3, currentStatString.indexOf('</a>')) + '\n'
+                }
+                else {
+                    outString += altStatArr[i] + ': ' + currentStatString.substring(0, currentStatString.indexOf('<')) + '\n'
+                }
+            }
+        }
+
+        return outString
+    }
+    var statArr = ['starts', 'wins', 'podiums', 'careerpoints', 'poles', 'fastestlaps']
+    var altStatArr = ['Entries', 'Wins', 'Podiums', 'Career points', 'Pole positions', 'Fastest laps']
+    var statStringsArr = ['Started ', ' times', 'Won ', ' times', 'Been on the podium ', ' times', 'Scored ', ' points', 'Claimed ', ' poles', 'Claimed ', ' fastest laps']
+    //var drivers = new Map()
+
+    if (message.content.length >= 8 && message.content.includes('driver ')) {
+
+        //get driver num from user
+        var driverNumber = (message.content.substring(8))
+        const fetchedPage = await fetch('https://ergast.com/api/f1/drivers.json?limit=1000&offset=0')
+        const pageData = await fetchedPage.json()
+        var driverArray = pageData.MRData.DriverTable.Drivers
+        var driverFound = false;
+        driverArray.forEach(async function (item) {
+            var driverInfoArray = [item.code, item.givenName + ' ' + item.familyName, item.permanentNumber, item.url]
+            //console.log(item.givenName + " " + item.familyName)
+            if ((Number)(driverNumber) > 0) {
+
+                if (item.permanentNumber == driverNumber) {
+                    driverFound = true
+                    replyStats(message, item)
+                }
+            }
+            else if (item.driverId == driverNumber) {
+
+                //console.log(driverInfoArray)
+                if (driverInfoArray != undefined) {
+                    driverFound = true
+                    replyStats(message, item)
+                }
+            }
+
+
+        })
+        if (!driverFound) {
+            invalidDriverInput()
+        }
+    }
+    else {
+        invalidDriverInput()
+    }
+}
+
+// superceded by newQualiCommand
 async function qualiCommand(message) {
     var rounds = new Map([]);
     var icsAsString = ''
@@ -360,6 +651,525 @@ async function qualiCommand(message) {
     }
 
 }
+//  superceded by qualiCommand2
+async function newQualiCommand(message) {
+
+    var messageContent = message.content
+    function invalidInput(message) {
+        message.reply({
+            content: 'Invalid Input'
+        })
+    }
+    if (messageContent.length > 7) {
+        var roundNumber = (Number)(messageContent.substring(messageContent.indexOf('quali ') + 6))
+        //console.log('round number = ' + roundNumber)
+        if (roundNumber != NaN) {
+            var roundURL = 'https://ergast.com/api/f1/2022/'
+            roundURL += roundNumber + '/qualifying.json'
+            const fetchedPage = await fetch(roundURL);
+            const pageData = await fetchedPage.json();
+            // await console.log(pageData)
+            if (pageData.MRData.RaceTable.Races.length > 0) {
+                var qualiArray = pageData.MRData.RaceTable.Races[0].QualifyingResults
+                var raceName = pageData.MRData.RaceTable.Races[0].raceName
+                var finalOutString = '\n'
+                // await console.log(raceName)
+                for (let i = 0; i < qualiArray.length; i++) {
+                    var positionString = '**P' + qualiArray[i].position + '**'
+                    var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                    var constructorName = qualiArray[i].Constructor.name
+                    var q1Time = qualiArray[i].Q1
+                    var q2Time = qualiArray[i].Q2
+                    var q3Time = qualiArray[i].Q3
+                    // await console.log(positionString)
+                    // await console.log(driverNameString)
+                    // await console.log(q1Time)
+                    // await console.log(q2Time)
+                    // await console.log(q3Time)
+                    if (q3Time != undefined) {
+                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                    }
+                    else if (((Number)(qualiArray[i].position)) < 11) {
+                        finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                    }
+
+
+                }
+                finalOutString += '\n'
+                // create embed
+                var qualiEmbed = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Q3 Results', value: finalOutString })
+
+
+                //reply with embed
+                const messageReply = await message.reply({
+                    embeds: [qualiEmbed],
+                    //content: 'testing reactions',
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+
+                client.on('interactionCreate', async (interaction) => {
+                    // console.log(interaction.toString())
+                    if (interaction.isButton) {
+                        if (interaction.customId == 'lastButton') {
+                            if (qualiEmbed.data.fields[0].name.includes('Q1')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) > 10) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q2Time = qualiArray[i].Q2
+                                        if (q2Time != undefined) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                                        }
+                                        else if (((Number)(qualiArray[i].position)) < 16) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q2 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
+                            }
+                            else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) < 11) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q3Time = qualiArray[i].Q3
+                                        if (q3Time != undefined) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                                        }
+                                        else {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q3 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Q3 Results', value: finalOutString })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
+                            }
+                            //console.log('last button clicked')
+                            // await interaction.update({fetchReply: true})
+                        }
+                        else if (interaction.customId == 'nextButton') {
+                            if (qualiEmbed.data.fields[0].name.includes('Q3')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) > 10) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q2Time = qualiArray[i].Q2
+                                        if (q2Time != undefined) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                                        }
+                                        else if (((Number)(qualiArray[i].position)) < 16) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q2 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Knocked out in Q2', value: finalOutString })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
+                            }
+                            else if (qualiEmbed.data.fields[0].name.includes('Q2')) {
+                                finalOutString = '\n'
+                                for (let i = 0; i < qualiArray.length; i++) {
+                                    if (((Number)(qualiArray[i].position)) > 15) {
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var positionString = '**P' + qualiArray[i].position + '**'
+                                        var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                                        var constructorName = qualiArray[i].Constructor.name
+                                        var q1Time = qualiArray[i].Q1
+                                        if (q1Time != undefined) {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
+                                        }
+                                        else {
+                                            finalOutString += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                                        }
+                                    }
+
+                                }
+                                qualiEmbed.setTitle('Q1 Results for ' + raceName)
+                                qualiEmbed.setFields({ name: 'Knocked out in Q1', value: finalOutString })
+                                // await messageReply.edit({
+                                //     embeds: [qualiEmbed],
+                                //     fetchReply: true
+                                // })
+                            }
+
+                            // await interaction.update({fetchReply: true})
+                        }
+
+                        //interaction.deferReply()
+                        interaction.update({
+                            embeds: [qualiEmbed]
+                        })
+                    }
+                })
+            }
+            else {
+                invalidInput(message)
+            }
+        }
+        else {
+            invalidInput(message)
+        }
+    }
+}
+
+
+// Currently used quali command
+///////////////////////////////////////////////
+//
+//  these variables are needed for quali 2.0
+//
+////////////////////////////////////////////
+var qualiEmbedQ3 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Q3 Results', value: "TEMP" })
+
+var qualiEmbedQ2 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Knocked out in Q2', value: "TEMP" })
+
+var qualiEmbedQ1 = new EmbedBuilder()
+    .setColor(embedColor)
+    .setTitle('Quali Results for ' + "TEMP")
+    .addFields({ name: 'Knocked out in Q1', value: "TEMP" })
+var pageCounter = 0;
+
+
+async function qualiCommand2(message) {
+    pageCounter = 0;
+    var messageContent = message.content
+    function invalidInput(message) {
+        message.reply({
+            content: 'Invalid Input'
+        })
+    }
+    if (messageContent.length > 7) {
+        var roundNumber = (Number)(messageContent.substring(messageContent.indexOf('quali ') + 6))
+        //console.log('round number = ' + roundNumber)
+        if (roundNumber != NaN) {
+            // set url
+            var roundURL = 'https://ergast.com/api/f1/2022/'
+            roundURL += roundNumber + '/qualifying.json'
+            // fetch data
+            const fetchedPage = await fetch(roundURL);
+            const pageData = await fetchedPage.json();
+
+            if (pageData.MRData.RaceTable.Races.length > 0) {
+                var qualiArray = pageData.MRData.RaceTable.Races[0].QualifyingResults
+                var raceName = pageData.MRData.RaceTable.Races[0].raceName
+
+                var finalOutString3 = '\n'
+                var finalOutString2 = '\n'
+                var finalOutString1 = '\n'
+
+                for (let i = 0; i < qualiArray.length; i++) {
+                    var positionString = '**P' + qualiArray[i].position + '**'
+                    var driverNameString = qualiArray[i].Driver.givenName + ' ' + qualiArray[i].Driver.familyName
+                    var constructorName = qualiArray[i].Constructor.name
+                    var q1Time = qualiArray[i].Q1
+                    var q2Time = qualiArray[i].Q2
+                    var q3Time = qualiArray[i].Q3
+                    if (q3Time != undefined) {
+                        finalOutString3 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q3Time + '```\n'
+                    }
+                    else if (((Number)(qualiArray[i].position)) < 11) {
+                        finalOutString3 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                    }
+                    else {
+                        if (q2Time != undefined) {
+                            finalOutString2 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q2Time + '```\n'
+                        }
+                        else if (((Number)(qualiArray[i].position)) < 16) {
+                            finalOutString2 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                        }
+                        else {
+                            if (q1Time != undefined) {
+                                finalOutString1 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + q1Time + '```\n'
+                            }
+                            else {
+                                finalOutString1 += positionString + '\n*' + constructorName + '*\n' + '**' + driverNameString + '**' + '\n```c\n' + 'No Time' + '```\n'
+                            }
+                        }
+                    }
+                }
+                finalOutString3 += '\n'
+                finalOutString2 += '\n'
+                finalOutString1 += '\n'
+
+                // create embed
+                qualiEmbedQ3 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Q3 Results', value: finalOutString3 })
+
+                qualiEmbedQ2 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Knocked out in Q2', value: finalOutString2 })
+
+                qualiEmbedQ1 = new EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Quali Results for ' + raceName)
+                    //.setURL(item.url)
+                    //.setImage(imageURL)
+                    .addFields({ name: 'Knocked out in Q1', value: finalOutString1 })
+
+                //reply with embed
+                const messageReply = await message.reply({
+                    embeds: [qualiEmbedQ3],
+                    //content: 'testing reactions',
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+                // client.on('interactionCreate', async (interaction) => {
+                //     if (interaction.isButton) {
+                //         // console.log("page counter = " + pageCounter)
+                //         if (interaction.customId == 'lastButton') {
+                //             // console.log('back button pressed')
+                //             if (pageCounter == 2) {
+                //                 pageCounter--
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ2],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             else if (pageCounter == 1) {
+                //                 pageCounter--
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ3],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             // else {
+                //             //     interaction.update({fetchReply: true})
+                //             // }
+                //         }
+                //         else if (interaction.customId == 'nextButton') {
+                //             // console.log('next button pressed')
+                //             if (pageCounter == 0) {
+                //                 pageCounter++
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ2],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             else if (pageCounter == 1) {
+                //                 pageCounter++
+                //                 interaction.update({
+                //                     embeds: [qualiEmbedQ1],
+                //                     components: [
+                //                         new ActionRowBuilder().setComponents(
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('lastButton')
+                //                                 .setLabel('<<')
+                //                                 .setStyle(ButtonStyle.Success),
+                //                             new ButtonBuilder()
+                //                                 .setCustomId('nextButton')
+                //                                 .setLabel('>>')
+                //                                 .setStyle(ButtonStyle.Success)
+                //                         )
+                //                     ],
+                //                 })
+                //             }
+                //             // else {
+                //             //     interaction.update({fetchReply: true})
+                //             // }
+                //         }
+                //     }
+                // })
+            }
+
+        }
+    }
+    else {
+        invalidInput()
+    }
+}
+
+// Check interaction and update quali embed accordingly
+client.on('interactionCreate', async (interaction) => {
+    if (interaction.isButton) {
+        // console.log("page counter = " + pageCounter)
+        if (interaction.customId == 'lastButton') {
+            // console.log('back button pressed')
+            if (pageCounter == 2) {
+                pageCounter--
+                interaction.update({
+                    embeds: [qualiEmbedQ2],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else if (pageCounter == 1) {
+                pageCounter--
+                interaction.update({
+                    embeds: [qualiEmbedQ3],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else {
+                interaction.update({fetchReply: true})
+            }
+        }
+        else if (interaction.customId == 'nextButton') {
+            // console.log('next button pressed')
+            if (pageCounter == 0) {
+                pageCounter++
+                interaction.update({
+                    embeds: [qualiEmbedQ2],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else if (pageCounter == 1) {
+                pageCounter++
+                interaction.update({
+                    embeds: [qualiEmbedQ1],
+                    components: [
+                        new ActionRowBuilder().setComponents(
+                            new ButtonBuilder()
+                                .setCustomId('lastButton')
+                                .setLabel('<<')
+                                .setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId('nextButton')
+                                .setLabel('>>')
+                                .setStyle(ButtonStyle.Success)
+                        )
+                    ],
+                })
+            }
+            else {
+                interaction.update({fetchReply: true})
+            }
+        }
+    }
+})
+
+
 function changeCommand(message) {
     function invalidChangeInput() {
         message.reply({
@@ -385,6 +1195,8 @@ function changeCommand(message) {
         invalidChangeInput();
     }
 }
+
+// Currently used standings command
 async function standingsCommand(message) {
     var today = new Date()
     var year = today.getFullYear().toString()
@@ -468,23 +1280,34 @@ async function standingsCommand(message) {
 }
 
 
+
 client.on("messageCreate", message => {
     if (message.author.bot == false) {
         if (message.content.toLowerCase().includes(botPrefix + 'n') && message.content.toLowerCase().indexOf(botPrefix + 'n') == 0) {
-            nextCommand(message)
+            newNextCommand(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'driver') &&
             message.content.toLowerCase().indexOf(botPrefix + 'driver') == 0
         ) {
-            driverCommand(message)
+            //driverCommand(message)
+            if (message.content.toLowerCase().includes(botPrefix + 'driver') && message.content.length <= 8) {
+                message.reply({
+                    content: 'Please enter a valid driver number or name: $driver 33 / $driver hamilton / $driver max_verstappen'
+                })
+            }
+            else {
+                newDriverCommand(message)
+            }
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'quali') &&
             message.content.toLowerCase().indexOf(botPrefix + 'quali') == 0
         ) {
             if (message.content.toLowerCase().includes(botPrefix + 'quali') && message.content.length == 6) {
-                message.reply("Add a round number at the end! \"$quali 14\" for example")
+                message.reply("Add a round number at the end! \"" + botPrefix + "quali 14\" for example")
             }
-            qualiCommand(message)
+            //qualiCommand(message)
+            // newQualiCommand(message)
+            qualiCommand2(message)
         }
         else if (message.content.toLowerCase().includes(botPrefix + 'results') &&
             message.content.toLowerCase().indexOf(botPrefix + 'results') == 0
@@ -504,7 +1327,7 @@ client.on("messageCreate", message => {
                 message.content.toLowerCase().indexOf(botPrefix + 'wcc') == 0)
         ) {
             if (message.content.toLowerCase().includes('standings')) {
-                message.reply("Try \"$wcc\" or \"$wdc 2013\" for example")
+                message.reply("Try \"" + botPrefix + "wcc\" or \"" + botPrefix + "wdc 2013\" for example")
             }
             else {
                 standingsCommand(message)
