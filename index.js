@@ -243,6 +243,36 @@ async function resultsCommand(message) {
     message.reply({ embeds: [resultsEmbed] });
 }
 
+// currently used help command
+async function helpCommand(message) {
+    var title = '**__F1 Buddy Command List__**';
+    var commandList = 'temp for commands';
+    var finalOutString = 'temporary';
+    const resultsEmbed = new EmbedBuilder()
+        .setColor(embedColor)
+        .setAuthor({ name: 'F1 Buddy', iconURL: 'https://avatars.githubusercontent.com/u/112535146?s=200&v=4', url: 'https://github.com/F1-Buddy' })
+        .setTitle(title)
+
+        .setDescription('Some description here')
+        .setThumbnail('./f1 trans')
+        .addFields(
+        	{ name: 'description', value: 'temp' },
+        	// { name: '\u200B', value: '\u200B' },
+        	// { name: 'Inline field title', value: 'Some value here', inline: true },
+        	// { name: 'Inline field title', value: 'Some value here', inline: true },
+        )
+
+
+        .addFields({ name: ':checkered_flag: **Race Commands** :checkered_flag:', value: commandList })
+        .addFields({ name: ':trophy: **Championship Commands** :trophy:', value: finalOutString })
+        
+        // .setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp()
+        .setFooter({ text: 'Created by itchy#5032 and andrés#1652'});
+
+    message.reply({ embeds: [resultsEmbed] });
+}
+
 // superceded by newDriverCommand
 async function driverCommand(message) {
     function invalidDNumInput() {
@@ -1318,6 +1348,11 @@ client.on("messageCreate", message => {
             message.content.toLowerCase().indexOf(botPrefix + 'change') == 0
         ) {
             changeCommand(message)
+        }
+        else if (message.content.toLowerCase().includes(botPrefix + 'help') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'help') == 0
+        ) {
+            helpCommand(message)
         }
         else if ((message.content.toLowerCase().includes(botPrefix + 'standings') &&
             message.content.toLowerCase().indexOf(botPrefix + 'standings') == 0) ||
