@@ -300,7 +300,7 @@ async function getCountry(name) {
     var descriptions = []
     var urlStringTemp = "https://www.formula1.com/en/racing/2022/"
     calSubs = calendarAsString.split('\n')
-    
+
     calSubs.forEach(element => {
         var countryIndex
         // finds correct event
@@ -316,7 +316,7 @@ async function getCountry(name) {
             if (countryString == "EmiliaRomagna") {
                 countryString = "Italy"
             }
-            
+
             // get iso code for country
             if (countryMap.hasOwnProperty(countryString)) {
                 countryCode = countryMap[countryString]
@@ -433,7 +433,7 @@ async function newNextCommand(message) {
         // console.log(isoCode)
         var titleString = ":checkered_flag: **__Race Schedule__** :checkered_flag:"
         if (isoCode != undefined && isoCode != null && isoCode != "") {
-            titleString = ":flag_"+isoCode.toLowerCase()+":"+" **__Race Schedule__** "+":flag_"+isoCode.toLowerCase()+":"
+            titleString = ":flag_" + isoCode.toLowerCase() + ":" + " **__Race Schedule__** " + ":flag_" + isoCode.toLowerCase() + ":"
         }
     } catch (error) {
         console.log(error)
@@ -526,7 +526,7 @@ async function resultsCommand(message) {
 
 
     //console.log(finalOutString)
-    finalOutString += "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
+    finalOutString += "```\nPosition"+"    Driver"+"\t\t\t   Lap Time\n```\n"
     if (pageData.MRData.RaceTable.Races.length != 0) {
         var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
         for (let i = 0; i < resultsArr.length; i++) {
@@ -539,8 +539,33 @@ async function resultsCommand(message) {
             } else {
                 finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].status
             }
-
-            finalOutString += "\t" + positionString + "\t\t\t" + driverNameString + "\t\t\t"
+            var spaceString = ""
+            finalOutString += "\t" + positionString 
+            var driverNameIndex = 0
+            var positionIndex = 0
+            for (let i = 0; i < 15-positionString.length; i++){
+                finalOutString += " "
+            }
+            positionIndex = finalOutString.indexOf(positionString)
+            driverNameIndex = finalOutString.indexOf(driverNameString)
+            // console.log(positionIndex)
+            // console.log(driverNameIndex)
+            
+            
+            // console.log(spaceString)
+            // console.log(finalOutString.indexOf(driverNameString))
+            // finalOutString.replace(driverNameString,"spaceString")
+            // finalOutString = "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
+            // finalOutString += "\t" + positionString +spaceString +driverNameString + "\t\t\t"
+            // console.log(finalOutString)
+            finalOutString += driverNameString;
+            var spaceOffset = 30-driverNameString.length-finishingStatus.length
+            // console.log(spaceOffset)
+            for (let i = 0; i < spaceOffset; i++){
+                // console.log(i)
+                finalOutString += " "
+                
+            }
             finalOutString += finishingStatus + '```'
 
 
