@@ -1,7 +1,7 @@
 # F1 Buddy [F1 Bot]
 
-## Created By ::
-[@jubuyer](https://github.com/jubuyer) && [@rakib-shahid](https://github.com/rakib-shahid)
+## Created By :
+[@rakib-shahid](https://github.com/rakib-shahid) & [@jubuyer](https://github.com/jubuyer)
 
 ## Deployment
 Made for Discord, hosted on Heroku
