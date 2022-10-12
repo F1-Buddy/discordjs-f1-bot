@@ -38,6 +38,297 @@ settingsArr = settingsString.split('\n')
 settingsString = ''
 var botPrefix = '' + settingsArr[0].substring(5, 6)
 
+// gets iso code for country, to be used for discord flag emojis (ex: United States -> US -> :flag_us:)
+// pretty horrible solution but improved from before
+// fetch ics, look for event with given name, get country of that event, use countryMap to get iso code of country
+async function getCountry(name) {
+    // taken from https://gist.github.com/tunguskha/6de721b6fa696e08468d57bee0ea5575
+    var countryMap = {
+        'Afghanistan': 'AF',
+        'Aland Islands': 'AX',
+        'Albania': 'AL',
+        'Algeria': 'DZ',
+        'American Samoa': 'AS',
+        'Andorra': 'AD',
+        'Angola': 'AO',
+        'Anguilla': 'AI',
+        'Antarctica': 'AQ',
+        'Antigua And Barbuda': 'AG',
+        'Argentina': 'AR',
+        'Armenia': 'AM',
+        'Aruba': 'AW',
+        'Australia': 'AU',
+        'Austria': 'AT',
+        'Azerbaijan': 'AZ',
+        'Bahamas': 'BS',
+        'Bahrain': 'BH',
+        'Bangladesh': 'BD',
+        'Barbados': 'BB',
+        'Belarus': 'BY',
+        'Belgium': 'BE',
+        'Belize': 'BZ',
+        'Benin': 'BJ',
+        'Bermuda': 'BM',
+        'Bhutan': 'BT',
+        'Bolivia': 'BO',
+        'Bosnia And Herzegovina': 'BA',
+        'Botswana': 'BW',
+        'Bouvet Island': 'BV',
+        'Brazil': 'BR',
+        'British Indian Ocean Territory': 'IO',
+        'Brunei Darussalam': 'BN',
+        'Bulgaria': 'BG',
+        'Burkina Faso': 'BF',
+        'Burundi': 'BI',
+        'Cambodia': 'KH',
+        'Cameroon': 'CM',
+        'Canada': 'CA',
+        'Cape Verde': 'CV',
+        'Cayman Islands': 'KY',
+        'Central African Republic': 'CF',
+        'Chad': 'TD',
+        'Chile': 'CL',
+        'China': 'CN',
+        'Christmas Island': 'CX',
+        'Cocos (Keeling) Islands': 'CC',
+        'Colombia': 'CO',
+        'Comoros': 'KM',
+        'Congo': 'CG',
+        'Congo, Democratic Republic': 'CD',
+        'Cook Islands': 'CK',
+        'Costa Rica': 'CR',
+        'Cote D\'Ivoire': 'CI',
+        'Croatia': 'HR',
+        'Cuba': 'CU',
+        'Cyprus': 'CY',
+        'Czech Republic': 'CZ',
+        'Denmark': 'DK',
+        'Djibouti': 'DJ',
+        'Dominica': 'DM',
+        'Dominican Republic': 'DO',
+        'Ecuador': 'EC',
+        'Egypt': 'EG',
+        'El Salvador': 'SV',
+        'Equatorial Guinea': 'GQ',
+        'Eritrea': 'ER',
+        'Estonia': 'EE',
+        'Ethiopia': 'ET',
+        'Falkland Islands (Malvinas)': 'FK',
+        'Faroe Islands': 'FO',
+        'Fiji': 'FJ',
+        'Finland': 'FI',
+        'France': 'FR',
+        'French Guiana': 'GF',
+        'French Polynesia': 'PF',
+        'French Southern Territories': 'TF',
+        'Gabon': 'GA',
+        'Gambia': 'GM',
+        'Georgia': 'GE',
+        'Germany': 'DE',
+        'Ghana': 'GH',
+        'Gibraltar': 'GI',
+        'Greece': 'GR',
+        'Greenland': 'GL',
+        'Grenada': 'GD',
+        'Guadeloupe': 'GP',
+        'Guam': 'GU',
+        'Guatemala': 'GT',
+        'Guernsey': 'GG',
+        'Guinea': 'GN',
+        'Guinea-Bissau': 'GW',
+        'Guyana': 'GY',
+        'Haiti': 'HT',
+        'Heard Island & Mcdonald Islands': 'HM',
+        'Holy See (Vatican City State)': 'VA',
+        'Honduras': 'HN',
+        'Hong Kong': 'HK',
+        'Hungary': 'HU',
+        'Iceland': 'IS',
+        'India': 'IN',
+        'Indonesia': 'ID',
+        'Iran, Islamic Republic Of': 'IR',
+        'Iraq': 'IQ',
+        'Ireland': 'IE',
+        'Isle Of Man': 'IM',
+        'Israel': 'IL',
+        'Italy': 'IT',
+        'Jamaica': 'JM',
+        'Japan': 'JP',
+        'Jersey': 'JE',
+        'Jordan': 'JO',
+        'Kazakhstan': 'KZ',
+        'Kenya': 'KE',
+        'Kiribati': 'KI',
+        'Korea': 'KR',
+        'Kuwait': 'KW',
+        'Kyrgyzstan': 'KG',
+        'Lao People\'s Democratic Republic': 'LA',
+        'Latvia': 'LV',
+        'Lebanon': 'LB',
+        'Lesotho': 'LS',
+        'Liberia': 'LR',
+        'Libyan Arab Jamahiriya': 'LY',
+        'Liechtenstein': 'LI',
+        'Lithuania': 'LT',
+        'Luxembourg': 'LU',
+        'Macao': 'MO',
+        'Macedonia': 'MK',
+        'Madagascar': 'MG',
+        'Malawi': 'MW',
+        'Malaysia': 'MY',
+        'Maldives': 'MV',
+        'Mali': 'ML',
+        'Malta': 'MT',
+        'Marshall Islands': 'MH',
+        'Martinique': 'MQ',
+        'Mauritania': 'MR',
+        'Mauritius': 'MU',
+        'Mayotte': 'YT',
+        'Mexico': 'MX',
+        'Micronesia, Federated States Of': 'FM',
+        'Moldova': 'MD',
+        'Monaco': 'MC',
+        'Mongolia': 'MN',
+        'Montenegro': 'ME',
+        'Montserrat': 'MS',
+        'Morocco': 'MA',
+        'Mozambique': 'MZ',
+        'Myanmar': 'MM',
+        'Namibia': 'NA',
+        'Nauru': 'NR',
+        'Nepal': 'NP',
+        'Netherlands': 'NL',
+        'Netherlands Antilles': 'AN',
+        'New Caledonia': 'NC',
+        'New Zealand': 'NZ',
+        'Nicaragua': 'NI',
+        'Niger': 'NE',
+        'Nigeria': 'NG',
+        'Niue': 'NU',
+        'Norfolk Island': 'NF',
+        'Northern Mariana Islands': 'MP',
+        'Norway': 'NO',
+        'Oman': 'OM',
+        'Pakistan': 'PK',
+        'Palau': 'PW',
+        'Palestinian Territory, Occupied': 'PS',
+        'Panama': 'PA',
+        'Papua New Guinea': 'PG',
+        'Paraguay': 'PY',
+        'Peru': 'PE',
+        'Philippines': 'PH',
+        'Pitcairn': 'PN',
+        'Poland': 'PL',
+        'Portugal': 'PT',
+        'Puerto Rico': 'PR',
+        'Qatar': 'QA',
+        'Reunion': 'RE',
+        'Romania': 'RO',
+        'Russian Federation': 'RU',
+        'Rwanda': 'RW',
+        'Saint Barthelemy': 'BL',
+        'Saint Helena': 'SH',
+        'Saint Kitts And Nevis': 'KN',
+        'Saint Lucia': 'LC',
+        'Saint Martin': 'MF',
+        'Saint Pierre And Miquelon': 'PM',
+        'Saint Vincent And Grenadines': 'VC',
+        'Samoa': 'WS',
+        'San Marino': 'SM',
+        'Sao Tome And Principe': 'ST',
+        'Saudi Arabia': 'SA',
+        'Senegal': 'SN',
+        'Serbia': 'RS',
+        'Seychelles': 'SC',
+        'Sierra Leone': 'SL',
+        'Singapore': 'SG',
+        'Slovakia': 'SK',
+        'Slovenia': 'SI',
+        'Solomon Islands': 'SB',
+        'Somalia': 'SO',
+        'South Africa': 'ZA',
+        'South Georgia And Sandwich Isl.': 'GS',
+        'Spain': 'ES',
+        'Sri Lanka': 'LK',
+        'Sudan': 'SD',
+        'Suriname': 'SR',
+        'Svalbard And Jan Mayen': 'SJ',
+        'Swaziland': 'SZ',
+        'Sweden': 'SE',
+        'Switzerland': 'CH',
+        'Syrian Arab Republic': 'SY',
+        'Taiwan': 'TW',
+        'Tajikistan': 'TJ',
+        'Tanzania': 'TZ',
+        'Thailand': 'TH',
+        'Timor-Leste': 'TL',
+        'Togo': 'TG',
+        'Tokelau': 'TK',
+        'Tonga': 'TO',
+        'Trinidad And Tobago': 'TT',
+        'Tunisia': 'TN',
+        'Turkey': 'TR',
+        'Turkmenistan': 'TM',
+        'Turks And Caicos Islands': 'TC',
+        'Tuvalu': 'TV',
+        'Uganda': 'UG',
+        'Ukraine': 'UA',
+        'United Arab Emirates': 'AE',
+        'United Kingdom': 'GB',
+        'United States': 'US',
+        'United States Outlying Islands': 'UM',
+        'Uruguay': 'UY',
+        'Uzbekistan': 'UZ',
+        'Vanuatu': 'VU',
+        'Venezuela': 'VE',
+        'Viet Nam': 'VN',
+        'Virgin Islands, British': 'VG',
+        'Virgin Islands, U.S.': 'VI',
+        'Wallis And Futuna': 'WF',
+        'Western Sahara': 'EH',
+        'Yemen': 'YE',
+        'Zambia': 'ZM',
+        'Zimbabwe': 'ZW'
+    };
+
+    var countryCode = ""
+    var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
+    var calendarAsString = ''
+    const fetchedPage = await fetch(calendarURL)
+    calendarAsString = await fetchedPage.text()
+    var calSubs = []
+    var descriptions = []
+    var urlStringTemp = "https://www.formula1.com/en/racing/2022/"
+    calSubs = calendarAsString.split('\n')
+
+    calSubs.forEach(element => {
+        var countryIndex
+        // finds correct event
+        if (element.includes(name)) {
+            // console.log(element)
+            countryIndex = calSubs.indexOf(element) + 1
+            // gets name of country
+            var countryString = calSubs[countryIndex].substring(
+                calSubs[countryIndex].indexOf(urlStringTemp) + urlStringTemp.length,
+                calSubs[countryIndex].indexOf(".html", calSubs[countryIndex].indexOf(urlStringTemp))
+            )
+            countryString = countryString.replace("_", " ")
+            if (countryString == "EmiliaRomagna") {
+                countryString = "Italy"
+            }
+
+            // get iso code for country
+            if (countryMap.hasOwnProperty(countryString)) {
+                countryCode = countryMap[countryString]
+            }
+        }
+
+    });
+    // return country iso code
+    return countryCode
+}
+// getCountry()
+
 // superceded by newNextCommand
 async function nextCommand(message) {
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
@@ -114,7 +405,7 @@ async function newNextCommand(message) {
             //////////////////////////////////////////////////////////////
             // old method of converting
             // var oldDate = new Date(Date.UTC(eventYear, eventMonth, eventDay, eventHour - 1 , eventMinute))
-            var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 5 , eventMinute)
+            var oldDate = new Date(eventYear, eventMonth, eventDay, eventHour - 5, eventMinute)
             // tried to convert to localz
             // var newDate = new Date(oldDate.getTime() - oldDate.getTimezoneOffset()*60*1000);
             // console.log("oldDate = "+oldDate)
@@ -136,13 +427,25 @@ async function newNextCommand(message) {
     var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
     var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
 
+    // get and set emojis for country of race
+    try {
+        var isoCode = await getCountry(nextEventName)
+        // console.log(isoCode)
+        var titleString = ":checkered_flag: **__Race Schedule__** :checkered_flag:"
+        if (isoCode != undefined && isoCode != null && isoCode != "") {
+            titleString = ":flag_" + isoCode.toLowerCase() + ":" + " **__Race Schedule__** " + ":flag_" + isoCode.toLowerCase() + ":"
+        }
+    } catch (error) {
+        console.log(error)
+    }
+
     // gets whole weekend 
     if (nextEventName.indexOf('Practice 1') >= 0) {
         // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
         for (let i = 0; i < 5; i++) {
             nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
             nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
-            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+            finalOutString += '' + nextEventName + ' on \n``' + nextEventTime + '``\n'
         }
     }
     else {
@@ -152,23 +455,50 @@ async function newNextCommand(message) {
             nextIndex--
         }
         for (let i = 1; i < 6; i++) {
+
             nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
             nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
             // console.log(nextEventName)
             // console.log(nextEventTime)
-            finalOutString += '' + nextEventName + ' on ``' + nextEventTime + '``\n'
+            finalOutString += '' + nextEventName + ' on \n``' + nextEventTime + '``\n'
         }
         //console.log(nextEventName.indexOf('Practice 1'))
     }
 
 
+    const resultsEmbed = new EmbedBuilder()
+        .setColor(embedColor)
+        .setAuthor({ name: 'F1 Buddy', iconURL: 'https://avatars.githubusercontent.com/u/112535146?s=200&v=4', url: 'https://github.com/F1-Buddy' })
+        .setTitle(titleString)
+
+        // .setDescription('Some description here')
+
+        // this is a link to the pic of f1 logo i sent to #bot-testing,
+        // we can host the pic on github or smth and use a link to that 
+        // or just find one thats already hosted online
+        .setThumbnail('https://cdn.discordapp.com/attachments/1013448201522655283/1027935261675507832/unknown.png')
+        // .addFields(
+        // 	{ name: 'description', value: 'temp' },
+        // 	// { name: '\u200B', value: '\u200B' },
+        // 	// { name: 'Inline field title', value: 'Some value here', inline: true },
+        // 	// { name: 'Inline field title', value: 'Some value here', inline: true },
+        // )
+
+
+        .addFields({ name: '**Upcoming Race Weekend**', value: finalOutString })
+
+        // .setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp()
+        .setFooter({ text: 'Created by itchy#5032 and andrés#1652' });
+
+    message.reply({ embeds: [resultsEmbed] });
 
     // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
-    message.reply({
-        content: 
-        // "dev-rakib:\n" + 
-        finalOutString
-    })
+    // message.reply({
+    //     content: 
+    //     // "dev-rakib:\n" + 
+    //     finalOutString
+    // })
 }
 
 // Currently used results command
@@ -196,7 +526,7 @@ async function resultsCommand(message) {
 
 
     //console.log(finalOutString)
-    finalOutString += "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
+    finalOutString += "```\nPosition"+"    Driver"+"\t\t\t   Lap Time\n```\n"
     if (pageData.MRData.RaceTable.Races.length != 0) {
         var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
         for (let i = 0; i < resultsArr.length; i++) {
@@ -209,8 +539,33 @@ async function resultsCommand(message) {
             } else {
                 finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].status
             }
-
-            finalOutString += "\t" + positionString + "\t\t\t" + driverNameString + "\t\t\t"
+            var spaceString = ""
+            finalOutString += "\t" + positionString 
+            var driverNameIndex = 0
+            var positionIndex = 0
+            for (let i = 0; i < 15-positionString.length; i++){
+                finalOutString += " "
+            }
+            positionIndex = finalOutString.indexOf(positionString)
+            driverNameIndex = finalOutString.indexOf(driverNameString)
+            // console.log(positionIndex)
+            // console.log(driverNameIndex)
+            
+            
+            // console.log(spaceString)
+            // console.log(finalOutString.indexOf(driverNameString))
+            // finalOutString.replace(driverNameString,"spaceString")
+            // finalOutString = "```\nPosition\t\t\tDriver\t\t\tLap Time\n```\n"
+            // finalOutString += "\t" + positionString +spaceString +driverNameString + "\t\t\t"
+            // console.log(finalOutString)
+            finalOutString += driverNameString;
+            var spaceOffset = 30-driverNameString.length-finishingStatus.length
+            // console.log(spaceOffset)
+            for (let i = 0; i < spaceOffset; i++){
+                // console.log(i)
+                finalOutString += " "
+                
+            }
             finalOutString += finishingStatus + '```'
 
 
@@ -239,6 +594,40 @@ async function resultsCommand(message) {
         // .setImage('https://i.imgur.com/AfFp7pu.png')
         .setTimestamp()
     // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+
+    message.reply({ embeds: [resultsEmbed] });
+}
+
+// currently used help command
+async function helpCommand(message) {
+    var title = '**__F1 Buddy Command List__**';
+    var commandList = 'temp for commands';
+    var finalOutString = botPrefix + 'wcc\n' + botPrefix + 'wdc\n';
+    const resultsEmbed = new EmbedBuilder()
+        .setColor(embedColor)
+        .setAuthor({ name: 'F1 Buddy', iconURL: 'https://avatars.githubusercontent.com/u/112535146?s=200&v=4', url: 'https://github.com/F1-Buddy' })
+        .setTitle(title)
+
+        .setDescription('Some description here')
+
+        // this is a link to the pic of f1 logo i sent to #bot-testing,
+        // we can host the pic on github or smth and use a link to that 
+        // or just find one thats already hosted online
+        .setThumbnail('https://cdn.discordapp.com/attachments/1013448201522655283/1027935261675507832/unknown.png')
+        .addFields(
+            { name: 'description', value: 'temp' },
+            // { name: '\u200B', value: '\u200B' },
+            // { name: 'Inline field title', value: 'Some value here', inline: true },
+            // { name: 'Inline field title', value: 'Some value here', inline: true },
+        )
+
+
+        .addFields({ name: ':checkered_flag: **Race Commands** :checkered_flag:', value: commandList })
+        .addFields({ name: ':trophy: **Championship Commands** :trophy:', value: finalOutString })
+
+        // .setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp()
+        .setFooter({ text: 'Created by itchy#5032 and andrés#1652' });
 
     message.reply({ embeds: [resultsEmbed] });
 }
@@ -1121,7 +1510,7 @@ client.on('interactionCreate', async (interaction) => {
                 })
             }
             else {
-                interaction.update({fetchReply: true})
+                interaction.update({ fetchReply: true })
             }
         }
         else if (interaction.customId == 'nextButton') {
@@ -1163,7 +1552,7 @@ client.on('interactionCreate', async (interaction) => {
                 })
             }
             else {
-                interaction.update({fetchReply: true})
+                interaction.update({ fetchReply: true })
             }
         }
     }
@@ -1319,6 +1708,11 @@ client.on("messageCreate", message => {
         ) {
             changeCommand(message)
         }
+        else if (message.content.toLowerCase().includes(botPrefix + 'help') &&
+            message.content.toLowerCase().indexOf(botPrefix + 'help') == 0
+        ) {
+            helpCommand(message)
+        }
         else if ((message.content.toLowerCase().includes(botPrefix + 'standings') &&
             message.content.toLowerCase().indexOf(botPrefix + 'standings') == 0) ||
             (message.content.toLowerCase().includes(botPrefix + 'wdc') &&
@@ -1338,5 +1732,3 @@ client.on("messageCreate", message => {
 })
 
 client.login(process.env.TOKEN)
-
-
