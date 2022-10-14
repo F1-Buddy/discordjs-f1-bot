@@ -4,7 +4,7 @@ import DiscordJS, { ButtonStyle } from "discord.js"
 //  main branch embed color
 var embedColor = [255, 24, 1]
 //  dev-rakib embed color
-//  embedColor = [0, 247, 255]
+ embedColor = [0, 247, 255]
 //////////////////////////////
 
 import fetch from "node-fetch"
@@ -530,7 +530,7 @@ async function resultsCommand(message) {
     if (pageData.MRData.RaceTable.Races.length != 0) {
         var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
         for (let i = 0; i < resultsArr.length; i++) {
-            var positionString = '```P' + pageData.MRData.RaceTable.Races[0].Results[i].position
+            var positionString = '```c\nP' + pageData.MRData.RaceTable.Races[0].Results[i].position
             var driverNameString = pageData.MRData.RaceTable.Races[0].Results[i].Driver.givenName + ' ' +
                 pageData.MRData.RaceTable.Races[0].Results[i].Driver.familyName
             var finishingStatus = ''
@@ -1610,7 +1610,19 @@ async function standingsCommand(message) {
                 const pageJSON = await fetchedPage.json();
                 const standingsResults = pageJSON.MRData.StandingsTable.StandingsLists[0]
                 for (let i = 0; i < standingsResults.ConstructorStandings.length; i++) {
-                    finalOutString += "\t" + standingsResults.ConstructorStandings[i].position + "\t\t\t" + standingsResults.ConstructorStandings[i].points + "\t\t\t"
+                    finalOutString += standingsResults.ConstructorStandings[i].position
+                    // console.log(standingsResults.ConstructorStandings[i].points.length)
+                    for (let c = 0; c < 19-standingsResults.ConstructorStandings[i].position.length-standingsResults.ConstructorStandings[i].points.length; c++){
+                        
+                        finalOutString+=" "
+                        // console.log(finalOutString)
+                    } 
+                    finalOutString += standingsResults.ConstructorStandings[i].points
+                    for (let c = 0; c < 30-standingsResults.ConstructorStandings[i].Constructor.name.length; c++){
+                        
+                        finalOutString+=" "
+                        // console.log(finalOutString)
+                    } 
                     finalOutString += standingsResults.ConstructorStandings[i].Constructor.name + "\n"
                 }
                 finalOutString += "\n```"
