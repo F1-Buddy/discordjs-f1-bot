@@ -4,7 +4,7 @@ import DiscordJS, { ButtonStyle } from "discord.js"
 //  main branch embed color
 var embedColor = [255, 24, 1]
 //  dev-rakib embed color
-//  embedColor = [0, 247, 255]
+embedColor = [0, 247, 255]
 //////////////////////////////
 
 import fetch from "node-fetch"
@@ -376,6 +376,7 @@ async function nextCommand(message) {
 }
 // Currently used next command
 async function newNextCommand(message) {
+    var seasonOver = false;
     var calendarURL = 'https://www.formula1.com/calendar/Formula_1_Official_Calendar.ics'
     var calendarAsString = ''
     var calSubs = []
@@ -417,81 +418,94 @@ async function newNextCommand(message) {
     }
 
     //check which event is next by comapring Date objects and use that index to get it into the message
-    while (!nextBool) {
+    while (!nextBool && !seasonOver) {
         nextIndex++
+        // console.log(eventDateArr[nextIndex])
         if (eventDateArr[nextIndex] > today) {
             nextBool = true
         }
-    }
-    var finalOutString = "**Schedule for upcoming race weekend** (EST) **:**\n"
-    var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
-    var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
-
-    // get and set emojis for country of race
-    try {
-        var isoCode = await getCountry(nextEventName)
-        // console.log(isoCode)
-        var titleString = ":checkered_flag: **__Race Schedule__** :checkered_flag:"
-        if (isoCode != undefined && isoCode != null && isoCode != "") {
-            titleString = ":flag_" + isoCode.toLowerCase() + ":" + " **__Race Schedule__** " + ":flag_" + isoCode.toLowerCase() + ":"
-        }
-    } catch (error) {
-        console.log(error)
-    }
-
-    // gets whole weekend 
-    if (nextEventName.indexOf('Practice 1') >= 0) {
-        // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
-        for (let i = 0; i < 5; i++) {
-            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
-            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
-            finalOutString += '' + nextEventName + ' on \n``' + nextEventTime + '``\n'
+        else if (eventDateArr[nextIndex] == undefined) {
+            seasonOver = true
         }
     }
+    if (!seasonOver) {
+        var finalOutString = "**Schedule for upcoming race weekend** (EST) **:**\n"
+        var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+        var nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
+
+        // get and set emojis for country of race
+        try {
+            var isoCode = await getCountry(nextEventName)
+            // console.log(isoCode)
+            var titleString = ":checkered_flag: **__Race Schedule__** :checkered_flag:"
+            if (isoCode != undefined && isoCode != null && isoCode != "") {
+                titleString = ":flag_" + isoCode.toLowerCase() + ":" + " **__Race Schedule__** " + ":flag_" + isoCode.toLowerCase() + ":"
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+        // gets whole weekend 
+        if (nextEventName.indexOf('Practice 1') >= 0) {
+            // console.log("next event includes \"Practice 1\"\nNext event = " + nextEventName)
+            for (let i = 0; i < 5; i++) {
+                nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+                nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
+                finalOutString += '' + nextEventName + ' on \n``' + nextEventTime + '``\n'
+            }
+        }
+        else {
+            while (nextEventName.indexOf('Practice 1') < 0) {
+                nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
+                nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
+                nextIndex--
+            }
+            for (let i = 1; i < 6; i++) {
+
+                nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
+                nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
+                // console.log(nextEventName)
+                // console.log(nextEventTime)
+                finalOutString += '' + nextEventName + ' on \n``' + nextEventTime + '``\n'
+            }
+            //console.log(nextEventName.indexOf('Practice 1'))
+        }
+        const resultsEmbed = new EmbedBuilder()
+            .setColor(embedColor)
+            .setAuthor({ name: 'F1 Buddy', iconURL: 'https://avatars.githubusercontent.com/u/112535146?s=200&v=4', url: 'https://github.com/F1-Buddy' })
+            .setTitle(titleString)
+
+            // .setDescription('Some description here')
+
+            // this is a link to the pic of f1 logo i sent to #bot-testing,
+            // we can host the pic on github or smth and use a link to that 
+            // or just find one thats already hosted online
+            .setThumbnail('https://cdn.discordapp.com/attachments/1013448201522655283/1027935261675507832/unknown.png')
+            // .addFields(
+            // 	{ name: 'description', value: 'temp' },
+            // 	// { name: '\u200B', value: '\u200B' },
+            // 	// { name: 'Inline field title', value: 'Some value here', inline: true },
+            // 	// { name: 'Inline field title', value: 'Some value here', inline: true },
+            // )
+
+
+            .addFields({ name: '**Upcoming Race Weekend**', value: finalOutString })
+
+            // .setImage('https://i.imgur.com/AfFp7pu.png')
+            .setTimestamp()
+            .setFooter({ text: 'Created by itchy#5032 and andrés#1652' });
+
+        message.reply({ embeds: [resultsEmbed] });
+    }
+
     else {
-        while (nextEventName.indexOf('Practice 1') < 0) {
-            nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
-            nextEventTime = eventDateArr[(nextIndex)].toLocaleString()
-            nextIndex--
-        }
-        for (let i = 1; i < 6; i++) {
-
-            nextEventName = eventTimes[(nextIndex + i) * 2 + 1].substring(0, eventTimes[(nextIndex + i) * 2 + 1].length - 1);
-            nextEventTime = eventDateArr[(nextIndex + i)].toLocaleString()
-            // console.log(nextEventName)
-            // console.log(nextEventTime)
-            finalOutString += '' + nextEventName + ' on \n``' + nextEventTime + '``\n'
-        }
-        //console.log(nextEventName.indexOf('Practice 1'))
+        message.reply("Season is over! :crying_cat_face:");
     }
 
 
-    const resultsEmbed = new EmbedBuilder()
-        .setColor(embedColor)
-        .setAuthor({ name: 'F1 Buddy', iconURL: 'https://avatars.githubusercontent.com/u/112535146?s=200&v=4', url: 'https://github.com/F1-Buddy' })
-        .setTitle(titleString)
-
-        // .setDescription('Some description here')
-
-        // this is a link to the pic of f1 logo i sent to #bot-testing,
-        // we can host the pic on github or smth and use a link to that 
-        // or just find one thats already hosted online
-        .setThumbnail('https://cdn.discordapp.com/attachments/1013448201522655283/1027935261675507832/unknown.png')
-        // .addFields(
-        // 	{ name: 'description', value: 'temp' },
-        // 	// { name: '\u200B', value: '\u200B' },
-        // 	// { name: 'Inline field title', value: 'Some value here', inline: true },
-        // 	// { name: 'Inline field title', value: 'Some value here', inline: true },
-        // )
 
 
-        .addFields({ name: '**Upcoming Race Weekend**', value: finalOutString })
 
-        // .setImage('https://i.imgur.com/AfFp7pu.png')
-        .setTimestamp()
-        .setFooter({ text: 'Created by itchy#5032 and andrés#1652' });
-
-    message.reply({ embeds: [resultsEmbed] });
 
     // var finalOutString = 'Next event is ' + nextEventName + ' on ``' + nextEventTime + '``\n'
     // message.reply({
@@ -526,11 +540,11 @@ async function resultsCommand(message) {
 
 
     //console.log(finalOutString)
-    finalOutString += "```\nPosition"+"    Driver"+"\t\t\t   Lap Time\n```\n"
+    finalOutString += "```\nPosition" + "    Driver" + "\t\t\t   Lap Time\n```\n"
     if (pageData.MRData.RaceTable.Races.length != 0) {
         var resultsArr = pageData.MRData.RaceTable.Races[0].Results;
         for (let i = 0; i < resultsArr.length; i++) {
-            var positionString = '```P' + pageData.MRData.RaceTable.Races[0].Results[i].position
+            var positionString = '```c\nP' + pageData.MRData.RaceTable.Races[0].Results[i].position
             var driverNameString = pageData.MRData.RaceTable.Races[0].Results[i].Driver.givenName + ' ' +
                 pageData.MRData.RaceTable.Races[0].Results[i].Driver.familyName
             var finishingStatus = ''
@@ -540,18 +554,18 @@ async function resultsCommand(message) {
                 finishingStatus = pageData.MRData.RaceTable.Races[0].Results[i].status
             }
             var spaceString = ""
-            finalOutString += "\t" + positionString 
+            finalOutString += "\t" + positionString
             var driverNameIndex = 0
             var positionIndex = 0
-            for (let i = 0; i < 15-positionString.length; i++){
+            for (let i = 0; i < 15 - positionString.length; i++) {
                 finalOutString += " "
             }
             positionIndex = finalOutString.indexOf(positionString)
             driverNameIndex = finalOutString.indexOf(driverNameString)
             // console.log(positionIndex)
             // console.log(driverNameIndex)
-            
-            
+
+
             // console.log(spaceString)
             // console.log(finalOutString.indexOf(driverNameString))
             // finalOutString.replace(driverNameString,"spaceString")
@@ -559,12 +573,12 @@ async function resultsCommand(message) {
             // finalOutString += "\t" + positionString +spaceString +driverNameString + "\t\t\t"
             // console.log(finalOutString)
             finalOutString += driverNameString;
-            var spaceOffset = 30-driverNameString.length-finishingStatus.length
+            var spaceOffset = 30 - driverNameString.length - finishingStatus.length
             // console.log(spaceOffset)
-            for (let i = 0; i < spaceOffset; i++){
+            for (let i = 0; i < spaceOffset; i++) {
                 // console.log(i)
                 finalOutString += " "
-                
+
             }
             finalOutString += finishingStatus + '```'
 
@@ -1610,7 +1624,19 @@ async function standingsCommand(message) {
                 const pageJSON = await fetchedPage.json();
                 const standingsResults = pageJSON.MRData.StandingsTable.StandingsLists[0]
                 for (let i = 0; i < standingsResults.ConstructorStandings.length; i++) {
-                    finalOutString += "\t" + standingsResults.ConstructorStandings[i].position + "\t\t\t" + standingsResults.ConstructorStandings[i].points + "\t\t\t"
+                    finalOutString += standingsResults.ConstructorStandings[i].position
+                    // console.log(standingsResults.ConstructorStandings[i].points.length)
+                    for (let c = 0; c < 19 - standingsResults.ConstructorStandings[i].position.length - standingsResults.ConstructorStandings[i].points.length; c++) {
+
+                        finalOutString += " "
+                        // console.log(finalOutString)
+                    }
+                    finalOutString += standingsResults.ConstructorStandings[i].points
+                    for (let c = 0; c < 30 - standingsResults.ConstructorStandings[i].Constructor.name.length; c++) {
+
+                        finalOutString += " "
+                        // console.log(finalOutString)
+                    }
                     finalOutString += standingsResults.ConstructorStandings[i].Constructor.name + "\n"
                 }
                 finalOutString += "\n```"

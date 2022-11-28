@@ -8,6 +8,10 @@ Made for Discord, hosted on Heroku
 
 ### To-Do
 - [ ] fix quali command, calling round number > last round causes bot to break
+- [ ] align wdc and wcc commands
+- [ ] embed wdc and wcc commands
+- [ ] binary search for driver?
+
 
 
 ### FIXED
