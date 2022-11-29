@@ -428,6 +428,8 @@ async function newNextCommand(message) {
             seasonOver = true
         }
     }
+
+    // check if season is over
     if (!seasonOver) {
         var finalOutString = "**Schedule for upcoming race weekend** (EST) **:**\n"
         var nextEventName = eventTimes[(nextIndex) * 2 + 1].substring(0, eventTimes[(nextIndex) * 2 + 1].length - 1);
@@ -498,6 +500,8 @@ async function newNextCommand(message) {
         message.reply({ embeds: [resultsEmbed] });
     }
 
+    // TODO:
+    // fix and embed reply message for season over
     else {
         message.reply("Season is over! :crying_cat_face:");
     }
@@ -769,7 +773,9 @@ async function driverCommand(message) {
         invalidDNumInput()
     }
 }
+
 // Currently used driver command
+// Alonso currently breaks bot, FIX
 async function newDriverCommand(message) {
     function invalidDriverInput() {
         message.reply({

@@ -7,16 +7,16 @@
 Made for Discord, hosted on Heroku
 
 ### To-Do
-- [ ] fix quali command, calling round number > last round causes bot to break
-- [ ] align wdc and wcc commands
-- [ ] embed wdc and wcc commands
+- [ ] alonso breaks bot, fix
+- [ ] embed wdc and wcc commands + end of season message
 - [ ] binary search for driver?
 
 
 
 ### FIXED
 ### Quali command is currently broken in this branch
-
+- [x] align wdc and wcc commands
+- [x] fix quali command, calling round number > last round causes bot to break
 - [x] Calling quali command >1 times breaks the bot
 - [x] Clean up quali command & refactor into new methods
 
